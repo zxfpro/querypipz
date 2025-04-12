@@ -1,17 +1,6 @@
-# Welcome to MkDocs
+# Welcome to PypiDoctor
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+这是一个主要让模型理解第三方包的包
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+query pipeline 负责,
+简单的就是构件query

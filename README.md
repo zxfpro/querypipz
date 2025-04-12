@@ -1,7 +1,7 @@
-# PypiDocker
+# PypiDoctor
 
 
-#### 常规操作
+## 常规操作
 
 ### 导出环境
 ```
@@ -10,8 +10,7 @@ uv export --format requirements-txt > requirements.txt
 ### 更新文档
 ```
 mkdocs serve # 预览
-mkdocs gh-deploy # 同步到github网站
-mkdocs gh-deploy -d ../.temp
+mkdocs gh-deploy -d ../.temp # 同步到github网站
 ```
 ### 发布
 ```
@@ -22,5 +21,3 @@ uv publish
 ```
 bash run_test.sh
 ```
-
-
