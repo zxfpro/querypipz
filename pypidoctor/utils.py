@@ -23,3 +23,10 @@ def get_llm():
     Settings.llm = llm
     Settings.text_splitter = SentenceSplitter(chunk_size=4096)
     return llm
+
+
+if __name__ == "__main__":
+    llm = get_llm()
+    print(llm.complete('hello'))
+
+    

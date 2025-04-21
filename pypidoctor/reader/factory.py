@@ -5,8 +5,7 @@ from .reader import CustObsidianReader
 
 class Reader(Enum):
     CustObsidianReader = 'CustObsidianReader'
-    Option2 = 'Option2'
-    Option3 = 'Option3'
+    _Reader = '_Reader'
     # 添加更多选项
 
 class ReaderFactory:
@@ -17,17 +16,12 @@ class ReaderFactory:
         if reader_type.value == 'CustObsidianReader':
             reader = CustObsidianReader()
 
-        elif reader_type.value == 'Option2':
-            # 配置 Option2 的实例
+        elif reader_type.value == '_Reader':
+            # 配置 _Reader 的实例
             # 例如：
             # reader = AnotherClass(param1=value1, param2=value2)
             pass
 
-        elif reader_type.value == 'Option3':
-            # 配置 Option3 的实例
-            # 例如：
-            # reader = YetAnotherClass(param1=value1, param2=value2)
-            pass
 
         else:
             raise Exception('Unknown reader_type')

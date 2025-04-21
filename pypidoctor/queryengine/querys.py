@@ -87,13 +87,4 @@ class PythonQueryEngine(CustomQueryEngine):
             response_obj = self.response_synthesizer.synthesize(response.text, nodes)
             return Response(response=response.text,source_nodes=nodes) # TODO 增加metadata
 
-retriever = index.as_retriever(similarity_top_k=similarity_top_k)
-
-query_engine = PythonQueryEngine(
-    retriever=retriever,
-    response_synthesizer=get_response_synthesizer(response_mode="compact"),
-    llm=Settings.llm,
-    qa_prompt=qa_prompt,
-    stream = True,
-)
 

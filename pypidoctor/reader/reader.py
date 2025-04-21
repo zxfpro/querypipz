@@ -1,8 +1,3 @@
-import os
-from llama_index.core import SimpleDirectoryReader
-from llama_index.core import VectorStoreIndex
-import shutil
-
 from llama_index.core.readers.base import BaseReader
 from typing import List, Dict,Optional
 from llama_index.core import Document
