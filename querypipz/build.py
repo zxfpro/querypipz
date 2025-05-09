@@ -99,29 +99,3 @@ class KnowledgeBaseManager:
         else:
             print(f"Knowledge base '{kb_name}' not found.")
 
-# Example usage (can be moved to a separate script)
-# if __name__ == "__main__":
-#     manager = KnowledgeBaseManager()
-
-#     # Build a new KB
-#     manager.build_or_update_kb("my_obsidian_notes", ["./path/to/your/obsidian/vault"])
-
-#     # Build another KB
-#     manager.build_or_update_kb("my_docs", ["./path/to/another/document/folder"], readertype=Reader.SimpleReader)
-
-#     # List available KBs
-#     print("Available knowledge bases:", manager.list_kbs())
-
-#     # Get an index and query it (assuming you have a query engine setup)
-#     # obsidian_index = manager.get_kb_index("my_obsidian_notes")
-#     # if obsidian_index:
-#     #     query_engine = obsidian_index.as_query_engine()
-#     #     response = query_engine.query("What is the main topic of my notes?")
-#     #     print(response)
-
-#     # Update a KB (e.g., after adding new files to the folder)
-#     # manager.build_or_update_kb("my_obsidian_notes", ["./path/to/your/obsidian/vault"])
-
-#     # Delete a KB
-#     # manager.delete_kb("my_docs")
-

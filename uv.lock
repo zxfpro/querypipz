@@ -891,6 +891,20 @@ wheels = [
 ]
 
 [[package]]
+name = "llama-index-readers-github"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "llama-index-core" },
+    { name = "llama-index-readers-file" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9e/c7/83f7b271bc75006ada8f725ec64cb48ebeccfc2643a3f9a62f6fc35ecec7/llama_index_readers_github-0.6.1.tar.gz", hash = "sha256:447bb77c805cac63b2b8f77a038ac20897fea68c0309c045e5747025529d29ac", size = 16437 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/83/f868da9c796e880928b6ef4176b0c1bfb463271e6400beb797fc466ef50d/llama_index_readers_github-0.6.1-py3-none-any.whl", hash = "sha256:6601b09b7c4c51b6cfbde76b4c788d6f18cff9315cc47a84e98e2ace57d7332f", size = 22925 },
+]
+
+[[package]]
 name = "llama-index-readers-llama-parse"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1652,21 +1666,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pypidoctor"
-version = "0.1.3"
-source = { virtual = "." }
-dependencies = [
-    { name = "black" },
-    { name = "toolsz" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "toolsz", specifier = ">=0.1.4" },
-]
-
-[[package]]
 name = "pytest"
 version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1781,6 +1780,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fe/0f/25911a9f080464c59fab9027482f822b86bf0608957a5fcc6eaac85aa515/PyYAML-6.0.2-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:68ccc6023a3400877818152ad9a1033e3db8625d899c72eacb5a668902e4d652", size = 751597 },
     { url = "https://files.pythonhosted.org/packages/14/0d/e2c3b43bbce3cf6bd97c840b46088a3031085179e596d4929729d8d68270/PyYAML-6.0.2-cp313-cp313-win32.whl", hash = "sha256:bc2fa7c6b47d6bc618dd7fb02ef6fdedb1090ec036abab80d4681424b84c1183", size = 140527 },
     { url = "https://files.pythonhosted.org/packages/fa/de/02b54f42487e3d3c6efb3f89428677074ca7bf43aae402517bc7cca949f3/PyYAML-6.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:8388ee1976c416731879ac16da0aff3f63b286ffdd57cdeb95f3f2e085687563", size = 156446 },
+]
+
+[[package]]
+name = "querypipz"
+version = "0.1.4"
+source = { virtual = "." }
+dependencies = [
+    { name = "black" },
+    { name = "llama-index-readers-github" },
+    { name = "toolsz" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "black", specifier = ">=25.1.0" },
+    { name = "llama-index-readers-github", specifier = ">=0.6.1" },
+    { name = "toolsz", specifier = ">=0.1.4" },
 ]
 
 [[package]]
