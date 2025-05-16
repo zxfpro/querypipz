@@ -9,3 +9,6 @@ dependencies = [
     "llama-index-readers-github>=0.6.1",
     "toolsz>=0.1.4",
 ]
+
+[tool.uv.workspace]
+members = ["~/GitHub/commender"]

@@ -15,6 +15,8 @@ def test_run():
     qur.query('hello')
     qur.retrieve('vv')
 
+
+
 from querypipz import KnowledgeBaseManager
 
 @pytest.mark.skip('等待')
