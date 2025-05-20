@@ -6,9 +6,17 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "black>=25.1.0",
+    "llama-index[all]>=0.12.31",
+    "llama-index-readers-file>=0.4.7",
     "llama-index-readers-github>=0.6.1",
     "toolsz>=0.1.4",
+    "llama-index-core>=0.12.31",
+    "llama-index-readers-database>=0.4.0",
 ]
 
 [tool.uv.workspace]
-members = ["~/GitHub/commender"]
+members = ["~/GitHub/commender", "audioz"]
+
+[tool.pytest.ini_options]
+testpaths = [ "tests",]
+pythonpath = [ "src",]
