@@ -41,3 +41,5 @@ class Retriver:
 
         return instance
     
+def build_retriver(self):
+    self.query.retriver = VectorIndexRetriever

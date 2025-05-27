@@ -8,6 +8,7 @@ from llama_index.core import download_loader
 from llama_index.readers.database import DatabaseReader
 import os
 import yaml
+import PyPDF2
 
 
 def get_data_from_md(text):
@@ -87,7 +88,32 @@ class PDFFileReader(BaseReader):
                                       "status":'file',
                                       },
                            )
+        
+
+        # from llama_index.core.schema import TextNode
+
+        # node1 = TextNode(text="<text_chunk>", id_="<node_id>")
+        # node2 = TextNode(text="<text_chunk>", id_="<node_id>")
         return [document]
+    
+
+from llama_index.core import Document
+
+class SimplesReader(BaseReader):
+    def load_data(self, file_path: str, extra_info: Optional[Dict] = None) -> List[Document]:
+        # 自定义读取逻辑
+
+        text = extract_text_from_pdf(file_path)
+        
+        document = Document(text=text, 
+                            metadata={"topic":'',
+                                      "status":'file',
+                                      },
+                           )
+        return [document]
+    
+
+
 
 class ReaderType(Enum):
     ObsidianReaderCus = 'ObsidianReaderCus'
@@ -101,11 +127,9 @@ class Reader:
 
         if type.value == 'ObsidianReaderCus':
             instance = ObsidianReaderCus()
-        elif type.value == 'DatabaseReader':
+        elif type.value == 'PDFFileReader':
             instance = PDFFileReader()
-
-        elif type.value == 'DatabaseReader2':
-
+        elif type.value == 'DatabaseReader':
             # instance = AnotherClass(param1=value1, param2=value2)
             reader = DatabaseReader(
                 scheme=os.getenv("DB_SCHEME"),

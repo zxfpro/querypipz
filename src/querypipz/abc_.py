@@ -26,6 +26,10 @@ class QueryerABC():
 
 # 生成器接口
 class QueryBuilder:
+
+    def set_llm(self):
+        pass
+
     def build_reader(self):
         pass
 
@@ -45,4 +49,10 @@ class QueryBuilder:
         pass
 
     def get_queryer(self):
+        pass
+
+    def build_tools(self):
+        pass
+
+    def build_kg_extractors(self):
         pass

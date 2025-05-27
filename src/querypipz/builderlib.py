@@ -23,7 +23,12 @@ from .factory.ingestion_pipeline import Splitter,SplitterType
 from .factory.ingestion_pipeline import Cleaner,CleanerType, Embedding, EmbeddingType
 from .factory.store import VectorStore,VectorStoreType
 import os
+from llama_index.core import Settings
+from llama_index.llms.openai import OpenAI
+from dotenv import load_dotenv
 
+from llama_index.core import PropertyGraphIndex
+from llama_index.core.indices.property_graph.transformations import ImplicitPathExtractor,SchemaLLMPathExtractor,SimpleLLMPathExtractor, DynamicLLMPathExtractor
 
 
 class Queryer(QueryerABC):
@@ -37,25 +42,35 @@ class Queryer(QueryerABC):
         self.query_pipeline = None  # Type hint will be added later
         self.retriever = None
         self.index: Optional[VectorStoreIndex] = None
+        self.kg_extractors = None
+        
 
     def build(self):
         if self.reader is None:
             raise ValueError("Reader is not set. Call build_reader first.")
-        if self.ingestion_pipeline is None:
-            raise ValueError("Ingestion pipeline is not set. Call build_splitter first.")
-
-        documents = self.reader.load_data()
-        nodes = self.ingestion_pipeline.run(documents=documents)
-        # print(nodes,'nodes')
         
+        documents = self.reader.load_data()
+        nodes = None
+        if self.ingestion_pipeline:
+            nodes = self.ingestion_pipeline.run(documents=documents)
 
 
+        if nodes:
+            if self.index_type == "VectorStoreIndex":
+                self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
+                # self.index = PropertyGraphIndex(nodes,storage_context = self.storage_context,show_progress=True,)
 
-        print(self.persist_path,'self.persist_path')
-        if self.index_type == "VectorStoreIndex":
-            self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
-            self.index.storage_context.persist(self.persist_path)
+        else:
+            if self.index_type == "VectorStoreIndex":
+                self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
 
+            elif self.index_type == "PropertyGraphIndex":
+                self.index = PropertyGraphIndex.from_documents(
+                                                            documents=documents,
+                                                            show_progress=True,
+                                                            kg_extractors = self.kg_extractors,
+                                                            # embed_kg_nodes = False,
+                                                            )
         return 'builded'
 
     def get_retriever(self, similarity_top_k: int = 5):
@@ -70,7 +85,9 @@ class Queryer(QueryerABC):
 
         storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
         self.index = load_index_from_storage(storage_context=storage_context)
-        self.retriever = self.index.as_retriever(similarity_top_k=similarity_top_k)
+        self.retriever = self.index.as_retriever(similarity_top_k=similarity_top_k,
+                                                 include_text=False,
+                                                 )
         return self.retriever
 
     def retrieve(self, query_text: str, similarity_top_k: int = 5):
@@ -92,7 +109,8 @@ class Queryer(QueryerABC):
 
         storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
         self.index = load_index_from_storage(storage_context=storage_context)
-        self.query_engine = self.index.as_query_engine(similarity_top_k=similarity_top_k)
+        self.query_engine = self.index.as_query_engine(similarity_top_k=similarity_top_k,
+                                                       include_text=True,)
         return self.query_engine
 
     def query(self, prompt: str, similarity_top_k: int = 3):
@@ -102,6 +120,7 @@ class Queryer(QueryerABC):
         query_engine = self.get_query_engine(similarity_top_k=similarity_top_k)
         return query_engine.query(prompt)
 
+# index.property_graph_store.save_networkx_graph(name="./kg3.html") # for debug
 
 class ObsidianDateBuilder(QueryBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/date'):
@@ -134,6 +153,9 @@ class ObsidianDateBuilder(QueryBuilder):
     def get_queryer(self):
         return self.query
     
+    def build_tools(self):
+        pass
+    
 
 class ObsidianHabitBuilder(ObsidianDateBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/habit'):
@@ -146,6 +168,8 @@ class ObsidianHabitBuilder(ObsidianDateBuilder):
                                           file_extractor = {".md": Reader(ReaderType.ObsidianReaderCus)},
                                           recursive=True,
                                           )
+    def build_tools(self):
+        pass
 
 class DeDaoJYRKBuilder(QueryBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/JYRK'):
@@ -181,62 +205,44 @@ class DeDaoJYRKBuilder(QueryBuilder):
 
     def get_queryer(self):
         return self.query
+    
+    def build_tools(self):
+        pass
 
 
-class ObsidianDateBuilder3(QueryBuilder):
-    def __init__(self):
+
+
+class TestGraphBuilder(QueryBuilder):
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph'):
         self.query = Queryer()
-        self.persist_path = './work'
-        self.query.persist_path = self.persist_path
+        self.query.persist_path = persist_path
+
+
+    def set_llm(self):
+        load_dotenv()
+        api_key = os.getenv("BIANXIE_API_KEY")
+        api_base = os.getenv("BIANXIE_BASE")
+        Settings.llm = OpenAI(model="gpt-4.1",api_base=api_base,api_key=api_key)
 
     def build_reader(self):
-        file_path= '/Users/zhaoxuefeng/GitHub/obsidian/工作/习惯'
-
+        file_path= '/Users/zhaoxuefeng/本地文稿/百度空间/实验广场/实验/data/chat_history_demo_dongsheng'
         self.query.reader = SimpleDirectoryReader(input_dir=file_path,
-                                          file_extractor = {".md": Reader(ReaderType.ObsidianReaderCus)},
+                                          file_extractor = {".md": Reader(ReaderType.PDFFileReader)},
                                           recursive=True,
                                         #   exclude=["*.mp3"],
                                           )
     def build_ingestion_pipeline(self):
-        from llama_index.core.node_parser import TokenTextSplitter
-        self.query.ingestion_pipeline = IngestionPipeline(transformations=[TokenTextSplitter(),])
+        self.query.ingestion_pipeline = IngestionPipeline(transformations=[])
 
     def build_storage_context(self):
-        # 配置一套配置的github
-        from pinecone import Pinecone
-        from pinecone import ServerlessSpec
-
-        api_key = os.environ["PINECONE_API_KEY"]
-        pc = Pinecone(api_key=api_key)
-        from llama_index.core import VectorStoreIndex, StorageContext
-        from llama_index.vector_stores.pinecone import PineconeVectorStore
-
-        pinecone_index = pc.Index("quickstart-index")
-        vector_store = PineconeVectorStore(
-                                            pinecone_index=pinecone_index, namespace="test_05_14"
-                                        )
-        self.query.storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        self.query.storage_context = StorageContext.from_defaults(vector_store=VectorStore(VectorStoreType.FAISS))
 
     def build_index(self):
-        self.query.index_type = "VectorStoreIndex"
-        # if os.path.exists('./work'):
-        #     storage_context = StorageContext.from_defaults(persist_dir='./work')
-        #     self.query.index = load_index_from_storage(storage_context)
-        # else:
-        #     self.query.index = 
-        
-        #     def build_index(self):
-        #         storage_context = StorageContext.from_defaults(persist_dir='./work')
-        #         self.index = load_index_from_storage(storage_context)
+        self.query.index_type = "PropertyGraphIndex"
 
-        #         # storage_context = StorageContext.from_defaults(persist_dir=kb_path)
-        #         # self.indexes[kb_name] = load_index_from_storage(storage_context)
 
     def build_retriver(self):
         self.query.retriever_Nest = None
-        
-        # storage_context = StorageContext.from_defaults(persist_dir=kb_path)
-        # self.indexes[kb_name] = load_index_from_storage(storage_context)
 
 
     def build_query_pipeline(self):
@@ -246,84 +252,28 @@ class ObsidianDateBuilder3(QueryBuilder):
     def get_queryer(self):
         return self.query
     
+    def build_tools(self):
+        def dynamic_method(self, name_path:str):
+            return self.index.property_graph_store.save_networkx_graph(name=name_path) # for debug
+        self.query.tools = dynamic_method.__get__(self.query,Queryer)
 
-class QueryBuilderdemo(QueryBuilder):
-    def __init__(self):
+
+
+class Test2GraphBuilder(TestGraphBuilder):
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph2'):
         self.query = Queryer()
+        self.query.persist_path = persist_path
+        
 
-    def build_reader(self):
-        self.query.reader = SimpleDirectoryReader("work")
+    def build_kg_extractors(self):
+        self.query.kg_extractors = [SimpleLLMPathExtractor(),
+                                    ImplicitPathExtractor(),]
+        
 
-    def build_ingestion_pipeline(self):
-        self.query.ingestion_pipeline = "splitter"
 
-    def build_index(self):
-        self.query.index = VectorStoreIndex
 
-    def build_retriver(self):
-        self.query.retriver = VectorIndexRetriever
 
-    def build_query_pipeline(self):
-        # configure response synthesizer
-        response_synthesizer = get_response_synthesizer()
 
-        # assemble query engine
-        query_engine = RetrieverQueryEngine(
-            retriever=self.query.retriver,
-            response_synthesizer=response_synthesizer,
-            node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
-        )
-        self.query_pipeline = query_engine
-
-    def get_queryer(self):
-        return self.query
-
-'''
-from llama_index.core import Document
-
-docu = Document(text='hello world')
-
-docu
-'''
-
-# 具体生成器
-class TestBuilder():
-    # TODO 做一个模式
-    def __init__(self):
-        self.query = Queryer()
-    
-    def build_reader(self):
-        file_path = 'work1'
-        # if Reader(ReaderType.Simple):
-        #     from llama_index.core import Document
-        #     class xx():
-        #         def load_data():
-        #             return [Document(text="text")]
-        #             # from llama_index.core.schema import TextNode
-
-        #             # node1 = TextNode(text="<text_chunk>", id_="<node_id>")
-        #             # node2 = TextNode(text="<text_chunk>", id_="<node_id>")
-        #     self.query.reader = xx()
-
-    def build_ingestion_pipeline(self):
-        self.query.splitter = "splitter"
-
-    def build_index(self):
-        self.query.index = "index"
-        # index = VectorStoreIndex.from_documents(all_documents)
-        #     index.storage_context.persist(persist_dir=kb_persist_dir)
-
-    def build_retriver(self):
-        self.query.retriver = "retriver"
-        # storage_context = StorageContext.from_defaults(persist_dir=kb_path)
-        #             self.indexes[kb_name] = load_index_from_storage(storage_context)
-    def build_query_pipeline(self):
-        self.query.query = "query"
-
-    def get_queryer(self):
-        pass
-        # return self.query.querypipeline
-    
 
 # 具体生成器
 class QueryBuilder3(QueryBuilder):
@@ -397,27 +347,7 @@ class PythonQueryEngine(CustomQueryEngine):
 
 
     '''
-    def __init__(self):
-        self.query = Queryer()
-
-    
-    def build_reader(self):
-        self.query.reader = "Reader"
-
-    def build_splitter(self):
-        self.query.splitter = "splitter"
-
-    def build_index(self):
-        self.query.index = "index"
-
-    def build_retriver(self):
-        self.query.retriver = None
-
-    def build_query(self):
-        self.query.query = "query"
-
-    def build_knowledge(self):
-        self.query.build = "build"
+   
 
     def get_query(self):
         # 例如：
@@ -425,7 +355,7 @@ class PythonQueryEngine(CustomQueryEngine):
         
         
         retriever = index.as_retriever(similarity_top_k=similarity_top_k)
-        qurw =  query_engine = PythonQueryEngine(
+        query_engine = PythonQueryEngine(
                 retriever=retriever,
                 response_synthesizer=get_response_synthesizer(response_mode="compact"),
                 llm=Settings.llm,
@@ -433,13 +363,6 @@ class PythonQueryEngine(CustomQueryEngine):
                 stream = True,
             )
 
-        return qurw
+        return query_engine
 
 
-
-
-        """
-        
-
-
-        """
