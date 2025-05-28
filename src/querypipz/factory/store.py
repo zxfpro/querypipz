@@ -1,42 +1,47 @@
-
+""" store factory """
 from enum import Enum
-from typing import List, Any
-from llama_index.core.vector_stores import SimpleVectorStore
-from llama_index.vector_stores.faiss import FaissVectorStore
+from typing import Any
+import os
 from llama_index.core.storage.docstore import SimpleDocumentStore
-
-
-import faiss
-
-from llama_index.core import VectorStoreIndex, StorageContext
+from llama_index.core.vector_stores import SimpleVectorStore
+from llama_index.core.graph_stores import SimpleGraphStore
+from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.vector_stores.pinecone import PineconeVectorStore
+from llama_index.graph_stores.nebula import NebulaPropertyGraphStore
+from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
+from llama_index.graph_stores.memgraph import MemgraphPropertyGraphStore
 
 from pinecone import Pinecone
-from pinecone import ServerlessSpec
-
-
+import faiss
 
 
 class VectorStoreType(Enum):
+    """_summary_
+
+    Args:
+        Enum (_type_): _description_
+    """
     SimpleVectorStore = 'SimpleVectorStore'
     FAISS = 'FAISS'
     PINECONE = "PINECONE"
     # 添加更多选项
 
 class VectorStore:
-    def __new__(cls, type: VectorStoreType) -> Any:
-        assert type.value in [i.value for i in VectorStoreType]
+    """_summary_
+    """
+    def __new__(cls, vector_type: VectorStoreType) -> Any:
+        assert vector_type.value in [i.value for i in VectorStoreType]
         instance = None
 
-        if type.value == 'SimpleVectorStore':
+        if vector_type.value == 'SimpleVectorStore':
             instance = SimpleVectorStore()
 
-        elif type.value == 'FAISS':
+        elif vector_type.value == 'FAISS':
             # Create a FAISS index
             faiss_index = faiss.IndexFlatL2(1536)  # Example dimension
             instance = FaissVectorStore(faiss_index=faiss_index)
 
-        elif type.value == 'PINECONE':
+        elif vector_type.value == 'PINECONE':
             # Create a FAISS index
             api_key = os.environ["PINECONE_API_KEY"]
             pc = Pinecone(api_key=api_key)
@@ -48,46 +53,57 @@ class VectorStore:
 
 
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance
 
 
 class DocStoreType(Enum):
+    """Docs
+
+    Args:
+        Enum (_type_): _description_
+    """
     SimpleDocumentStore = 'SimpleDocumentStore'
     # Add more options as needed
 
 
 class DocStore:
-    def __new__(cls, type: DocStoreType) -> Any:
-        assert type.value in [i.value for i in DocStoreType]
+    """DocStore
+    """
+    def __new__(cls, doc_type: DocStoreType) -> Any:
+        assert doc_type.value in [i.value for i in DocStoreType]
         instance = None
 
-        if type.value == 'SimpleDocumentStore':
+        if doc_type.value == 'SimpleDocumentStore':
             instance = SimpleDocumentStore()
-            
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance
 
 
 class GraphStoreType(Enum):
+    """GraphStoreType
+
+    Args:
+        Enum (_type_): _description_
+    """
     SimpleGraphStore = 'SimpleGraphStore'
     NebulaGraphStore = 'NebulaGraphStore'
     Neo4jGraphStore = 'Neo4jGraphStore'
     MemgraphGraphStore = 'MemgraphGraphStore'
 
 class GraphStore:
-    def __new__(cls, type: GraphStoreType) -> Any:
-        assert type.value in [i.value for i in GraphStoreType]
+    """GraphStore
+    """
+    def __new__(cls, graph_type: GraphStoreType) -> Any:
+        assert graph_type.value in [i.value for i in GraphStoreType]
         instance = None
 
-        if type.value == 'SimpleGraphStore':
+        if graph_type.value == 'SimpleGraphStore':
             instance = SimpleGraphStore()
-        
-        elif type.value == 'NebulaGraphStore':
-            from llama_index.graph_stores.nebula import NebulaPropertyGraphStore
+        elif graph_type.value == 'NebulaGraphStore':
             # Initialize NebulaPropertyGraphStore
             graph_store = NebulaPropertyGraphStore(
                 space="llamaindex_nebula_property_graph",
@@ -96,9 +112,7 @@ class GraphStore:
             instance = graph_store
 
 
-        elif type.value == 'Neo4jGraphStore':
-            from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
-
+        elif graph_type.value == 'Neo4jGraphStore':
             graph_store = Neo4jPropertyGraphStore(
                 username="neo4j",
                 password="llamaindex",
@@ -106,9 +120,7 @@ class GraphStore:
             )
             instance = graph_store
 
-        elif type.value == 'MemgraphGraphStore':
-            from llama_index.graph_stores.memgraph import MemgraphPropertyGraphStore
-
+        elif graph_type.value == 'MemgraphGraphStore':
             graph_store = MemgraphPropertyGraphStore(
                 username="",# Enter your Memgraph username (default "")
                 password="",# Enter your Memgraph password (default "")
@@ -116,9 +128,6 @@ class GraphStore:
             )
             instance = graph_store
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance
-
-
-

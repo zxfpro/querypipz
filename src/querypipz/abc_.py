@@ -1,17 +1,23 @@
+""" abc """
+from typing import Optional
+from abc import ABC, abstractmethod
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-from typing import List, Dict, Optional
-from abc import ABC, abstractmethod
 
 
 class QueryerABC(ABC):
+    """问答
+
+    Args:
+        ABC (_type_): query
+    """
     def __init__(self):
         self.persist_path = None
         self.reader: Optional[SimpleDirectoryReader] = None
         self.ingestion_pipeline: Optional[IngestionPipeline] = None
         self.storage_context = None
         self.index_type = None
-        self.retriever_Nest = None
+        self.retriever_nest = None
         self.query_pipeline = None
         self.retriever = None
         self.index: Optional[VectorStoreIndex] = None
@@ -21,7 +27,7 @@ class QueryerABC(ABC):
     def build(self):
         """Build the queryer components"""
         raise NotImplementedError
-    
+
     @abstractmethod
     def query(self, prompt: str, similarity_top_k: int = 3):
         """Query the index with prompt"""
@@ -39,6 +45,23 @@ class QueryerABC(ABC):
 
 
 class QueryBuilder(ABC):
+    """QueryBuilder
+
+    Args:
+        ABC (_type_): _description_
+
+    Raises:
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+        NotImplementedError: _description_
+    """
     @abstractmethod
     def set_llm(self):
         """Set the language model"""

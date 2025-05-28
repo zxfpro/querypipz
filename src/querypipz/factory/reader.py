@@ -1,17 +1,26 @@
-# Reader 工厂模式
-
+"""  Reader 工厂模式 """
+import os
 from enum import Enum
 from typing import List, Any, Dict,Optional
 from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
 from llama_index.core import download_loader
+from llama_index.core import Document
 from llama_index.readers.database import DatabaseReader
-import os
 import yaml
 import PyPDF2
 
 
+
 def get_data_from_md(text):
+    """_summary_
+
+    Args:
+        text (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     _,infos,content = text.split("---",2)
     data = yaml.safe_load(infos)
     return data, content
@@ -43,13 +52,17 @@ def extract_text_from_pdf(file_path):
 
 
 class ObsidianReaderCus(BaseReader):
+    """_summary_
+
+    Args:
+        BaseReader (_type_): _description_
+    """
     def load_data(self, file_path: str, extra_info: Optional[Dict] = None) -> List[Document]:
         # 自定义读取逻辑
         with open(file_path, 'r') as file:
             text = file.read()
         data,content = get_data_from_md(text)
 
-        
         # 使用状态
         status = data.get('编辑状态',None)
         topic = data.get('topic','')
@@ -60,9 +73,7 @@ class ObsidianReaderCus(BaseReader):
         content_cut = content[:6000]
         if len(content_cut) != len(content):
             print(topic,'is too long ***')
-
-
-        document = Document(text=f"topic: {topic} content: {content}", 
+        document = Document(text=f"topic: {topic} content: {content}",
                             metadata={"topic":topic,
                                       "status":status,
                                       "creation_date":str(creation_date),
@@ -70,7 +81,6 @@ class ObsidianReaderCus(BaseReader):
                                       "link":link},
                            )
         return [document]
-    
 
 class PDFFileReader(BaseReader):
     """PDF文档读取
@@ -82,45 +92,46 @@ class PDFFileReader(BaseReader):
         # 自定义读取逻辑
 
         text = extract_text_from_pdf(file_path)
-        
-        document = Document(text=text, 
+        document = Document(text=text,
                             metadata={"topic":'',
                                       "status":'file',
                                       },
                            )
-        
 
         # from llama_index.core.schema import TextNode
-
         # node1 = TextNode(text="<text_chunk>", id_="<node_id>")
         # node2 = TextNode(text="<text_chunk>", id_="<node_id>")
         return [document]
-    
-
-from llama_index.core import Document
 
 class SimplesReader(BaseReader):
+    """_summary_
+
+    Args:
+        BaseReader (_type_): _description_
+    """
     def load_data(self, file_path: str, extra_info: Optional[Dict] = None) -> List[Document]:
         # 自定义读取逻辑
-
         text = extract_text_from_pdf(file_path)
-        
-        document = Document(text=text, 
+        document = Document(text=text,
                             metadata={"topic":'',
                                       "status":'file',
                                       },
                            )
         return [document]
-    
-
-
 
 class ReaderType(Enum):
+    """_summary_
+
+    Args:
+        Enum (_type_): _description_
+    """
     ObsidianReaderCus = 'ObsidianReaderCus'
     PDFFileReader = "PDFFileReader"
     DatabaseReader = 'DatabaseReader'
 
 class Reader:
+    """_summary_
+    """
     def __new__(cls, type: ReaderType) -> Any:
         assert type.value in [i.value for i in ReaderType]
         instance = None
@@ -142,8 +153,7 @@ class Reader:
             instance = reader
             # query = "SELECT * FROM users"
             # documents = reader.load_data(query=query)
-
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance

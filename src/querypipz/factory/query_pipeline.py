@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import List, Any
-from llama_index.core import SimpleDirectoryReader
 
 
 class QueryType(Enum):
@@ -30,14 +29,14 @@ class Query:
         return instance
 
 
-def build_query_pipeline(self):
-    # configure response synthesizer
-    response_synthesizer = get_response_synthesizer()
+# def build_query_pipeline(self):
+#     # configure response synthesizer
+#     response_synthesizer = get_response_synthesizer()
 
-    # assemble query engine
-    query_engine = RetrieverQueryEngine(
-        retriever=self.query.retriver,
-        response_synthesizer=response_synthesizer,
-        node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
-    )
-    self.query_pipeline = query_engine
+#     # assemble query engine
+#     query_engine = RetrieverQueryEngine(
+#         retriever=self.query.retriver,
+#         response_synthesizer=response_synthesizer,
+#         node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
+#     )
+#     self.query_pipeline = query_engine
