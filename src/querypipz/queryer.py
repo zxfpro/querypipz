@@ -98,7 +98,7 @@ class Queryer(QueryerABC):
         return self.retriever
 
     def retrieve(self, query_text: str, similarity_top_k: int = 5):
-        """
+        """# TODO 改名, 容易写错
         使用检索器进行检索。
         """
         retriever = self.get_retriever(similarity_top_k=similarity_top_k)
