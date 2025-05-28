@@ -197,11 +197,10 @@ class HistoryMemoryBuilder(QueryBuilder):
 
     def build_query_pipeline(self):
         self.query.query_engine = None
-        
 
     def get_queryer(self):
         return self.query
-    
+
     def build_tools(self):
         self.query.tools = None
 
