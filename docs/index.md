@@ -1,6 +1,9 @@
-# Welcome to PypiDoctor
+# Welcome to QueryPipZ
 
-这是一个主要让模型理解第三方包的包
+##  应该如何使用该仓库
+1 合理的维护所有的factory 工厂
+    例如 docstore, vectorstore, graphstore
 
-query pipeline 负责,
-简单的就是构件query
+2 构建并存续特异化的builderlib
+
+3 注册到director 中的 buildtype中
