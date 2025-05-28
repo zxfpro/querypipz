@@ -29,7 +29,7 @@ from dotenv import load_dotenv
 
 from llama_index.core import PropertyGraphIndex
 from llama_index.core.indices.property_graph.transformations import ImplicitPathExtractor,SchemaLLMPathExtractor,SimpleLLMPathExtractor, DynamicLLMPathExtractor
-
+from llama_index.core import Document
 
 class Queryer(QueryerABC):
     def __init__(self):
@@ -43,6 +43,19 @@ class Queryer(QueryerABC):
         self.retriever = None
         self.index: Optional[VectorStoreIndex] = None
         self.kg_extractors = None
+        
+
+    def load(self):
+        assert 1==1
+        storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
+        self.index = load_index_from_storage(storage_context=storage_context)
+
+
+    def update(self, prompt: str):
+        self.load()
+
+        self.index.insert(Document(text = prompt))
+        self.index.storage_context.persist()
         
 
     def build(self):
@@ -119,6 +132,10 @@ class Queryer(QueryerABC):
         """
         query_engine = self.get_query_engine(similarity_top_k=similarity_top_k)
         return query_engine.query(prompt)
+    
+
+
+
 
 # index.property_graph_store.save_networkx_graph(name="./kg3.html") # for debug
 

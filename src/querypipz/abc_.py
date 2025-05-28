@@ -1,58 +1,90 @@
-
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 from typing import List, Dict, Optional
+from abc import ABC, abstractmethod
 
 
-class QueryerABC():
+class QueryerABC(ABC):
     def __init__(self):
         self.persist_path = None
         self.reader: Optional[SimpleDirectoryReader] = None
         self.ingestion_pipeline: Optional[IngestionPipeline] = None
         self.storage_context = None
         self.index_type = None
-        self.retriever_Nest = None  # Type hint will be added later
-        self.query_pipeline = None  # Type hint will be added later
+        self.retriever_Nest = None
+        self.query_pipeline = None
+        self.retriever = None
+        self.index: Optional[VectorStoreIndex] = None
+        self.kg_extractors = None
 
+    @abstractmethod
     def build(self):
-        pass
+        """Build the queryer components"""
+        raise NotImplementedError
     
+    @abstractmethod
     def query(self, prompt: str, similarity_top_k: int = 3):
-        pass
+        """Query the index with prompt"""
+        raise NotImplementedError
 
+    @abstractmethod
     def retrieve(self, query_text: str, similarity_top_k: int = 5):
-        pass
+        """Retrieve relevant documents"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def update(self, prompt: str):
+        """Update the index"""
+        raise NotImplementedError
 
 
-# 生成器接口
-class QueryBuilder:
-
+class QueryBuilder(ABC):
+    @abstractmethod
     def set_llm(self):
-        pass
+        """Set the language model"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_reader(self):
-        pass
+        """Build document reader"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_ingestion_pipeline(self):
-        pass
+        """Build ingestion pipeline"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_storage_context(self):
-        pass
+        """Build storage context"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_index(self):
-        pass
+        """Build index"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_retriver(self):
-        pass
+        """Build retriever"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_query_pipeline(self):
-        pass
+        """Build query pipeline"""
+        raise NotImplementedError
 
+    @abstractmethod
     def get_queryer(self):
-        pass
+        """Get the built queryer"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_tools(self):
-        pass
+        """Build tools"""
+        raise NotImplementedError
 
+    @abstractmethod
     def build_kg_extractors(self):
-        pass
+        """Build knowledge graph extractors"""
+        raise NotImplementedError
