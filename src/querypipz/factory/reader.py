@@ -95,6 +95,7 @@ class PDFFileReader(BaseReader):
         document = Document(text=text,
                             metadata={"topic":'',
                                       "status":'file',
+                                      "file_path":file_path,
                                       },
                            )
 
@@ -157,3 +158,27 @@ class Reader:
             raise TypeError('Unknown type')
 
         return instance
+
+
+"""
+
+from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
+
+# Create a two entity nodes
+entity1 = EntityNode(label="PERSON", name="Logan", properties={"age": 28})
+entity2 = EntityNode(label="ORGANIZATION", name="LlamaIndex")
+
+# Create a relation
+relation = Relation(
+    label="WORKS_FOR",
+    source_id=entity1.id,
+    target_id=entity2.id,
+    properties={"since": 2023},
+)
+
+pg_store.upsert_nodes([entity1, entity2])
+pg_store.upsert_relations([relation])
+# https://docs.llamaindex.ai/en/stable/examples/property_graph/graph_store/
+
+%pip install jupyter-nebulagraph
+"""

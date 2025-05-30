@@ -38,9 +38,12 @@ class BuilderType(Enum):
     ObsidianDateBuilder = 'ObsidianDateBuilder'
     ObsidianHabitBuilder = "ObsidianHabitBuilder"
     DeDaoJYRKBuilder = "DeDaoJYRKBuilder"
+    DeDaoJYRK2Builder = "DeDaoJYRK2Builder"
+    DeDaoJYRK6Builder = "DeDaoJYRK6Builder"
     TestGraphBuilder = "TestGraphBuilder"
     Test2GraphBuilder = "Test2GraphBuilder"
     HistoryMemoryBuilder = "HistoryMemoryBuilder"
+    HistoryMemory2Builder = "HistoryMemory2Builder"
     simple = 'simple'
     # 添加更多选项
 
@@ -57,14 +60,20 @@ class BuilderFactory:
         BuilderType.ObsidianDateBuilder: ObsidianDateBuilder,
         BuilderType.ObsidianHabitBuilder: ObsidianHabitBuilder,
         BuilderType.DeDaoJYRKBuilder: DeDaoJYRKBuilder,
+        BuilderType.DeDaoJYRK2Builder: DeDaoJYRK2Builder,
+        BuilderType.DeDaoJYRK6Builder: DeDaoJYRK6Builder,
         BuilderType.TestGraphBuilder: TestGraphBuilder,
         BuilderType.Test2GraphBuilder: Test2GraphBuilder,
         BuilderType.HistoryMemoryBuilder: HistoryMemoryBuilder,
+        BuilderType.HistoryMemory2Builder: HistoryMemory2Builder,
     }
 
-    def __new__(cls, builder_type: BuilderType) -> Any:
+    def __new__(cls, builder_type: BuilderType,persist_path=None) -> Any:
         if builder_type not in cls._builders:
             raise ValueError(f"Unknown builder type: {builder_type}")
         builder_class = cls._builders[builder_type]
-        instance = builder_class()
+        if persist_path:
+            instance = builder_class(persist_path = persist_path)
+        else:
+            instance = builder_class()
         return instance

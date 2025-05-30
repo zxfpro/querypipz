@@ -11,3 +11,7 @@ api_base = os.getenv("BIANXIE_BASE")
 
 Settings.embed_model = OpenAIEmbedding(api_key=api_key,api_base =api_base)
 Settings.llm = OpenAI(model="gpt-4o",api_base=api_base,api_key=api_key)
+Settings.api_key = api_key
+Settings.api_base = api_base
+
+from .director import BuilderFactory,BuilderType,Director

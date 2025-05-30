@@ -9,3 +9,12 @@
 2 构建并存续特异化的builderlib
 
 3 注册到director 中的 buildtype中
+
+
+
+###
+
+0 图数据库
+0-1 query pipeline
+1 多模态
+2 

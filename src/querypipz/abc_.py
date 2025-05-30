@@ -34,7 +34,7 @@ class QueryerABC(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def retrieve(self, query_text: str, similarity_top_k: int = 5):
+    def retrieve_search(self, query_text: str, similarity_top_k: int = 5):
         """Retrieve relevant documents"""
         raise NotImplementedError
 

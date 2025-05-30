@@ -9,6 +9,15 @@ from llama_index.core import (
 )
 from .abc_ import QueryerABC
 
+from contextlib import contextmanager
+
+@contextmanager
+def safe_operation(info:str):
+
+    try:
+        yield
+    except Exception as e:
+        raise TypeError(info +f": {e}")
 
 
 class Queryer(QueryerABC):
@@ -39,7 +48,12 @@ class Queryer(QueryerABC):
 
     def update(self, prompt: str):
         self.load()
-        self.index.insert(Document(text = prompt))
+        documents = [Document(text = prompt)]
+        if self.ingestion_pipeline:
+            nodes = self.ingestion_pipeline.run(documents=documents,show_progress = True)
+            self.index.insert_nodes(nodes)
+        else:
+            self.index.insert(documents[0])
         self.index.storage_context.persist(self.persist_path)
 
     def build(self):
@@ -52,33 +66,50 @@ class Queryer(QueryerABC):
                 return 'builded'
             else:
                 raise ValueError("Reader is not set. Call build_reader first.")
-
-        documents = self.reader.load_data()
-        nodes = None
-        if self.ingestion_pipeline:
-            nodes = self.ingestion_pipeline.run(documents=documents)
-
-
-        if nodes:
-            if self.index_type == "VectorStoreIndex":
-                self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
-                # self.index = PropertyGraphIndex(nodes,storage_context = self.storage_context,
-                #                                              show_progress=True,)
-
-        else:
-            if self.index_type == "VectorStoreIndex":
-                self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
-
-            elif self.index_type == "PropertyGraphIndex":
-                self.index = PropertyGraphIndex.from_documents(
-                                                            documents=documents,
-                                                            show_progress=True,
-                                                            kg_extractors = self.kg_extractors,
-                                                            # embed_kg_nodes = False,
-                                                            )
-        self.index.storage_context.persist(self.persist_path)
         
+        with safe_operation("Reader"):
+            documents = self.reader.load_data(show_progress = True)
+        chunk_size = 10
+        for i in range(len(documents)// chunk_size+1):
+            print(f'chunk: {i}')
+            documents_chunk = documents[i*chunk_size:(i+1)*chunk_size]
+            print(documents_chunk,'documents_chunk')
+            with safe_operation("Ingestion"):
+                nodes = None
+                if self.ingestion_pipeline:
+                    nodes = self.ingestion_pipeline.run(documents=documents_chunk,show_progress = True)
+
+            with safe_operation("Index"):
+                print(33)
+                if nodes:
+                    if self.index_type == "VectorStoreIndex":
+                        self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
+                        # self.index = PropertyGraphIndex(nodes,storage_context = self.storage_context,
+                        #                                              show_progress=True,)
+
+                else:
+                    if self.index_type == "VectorStoreIndex":
+                        self.index = VectorStoreIndex.from_documents(
+                                                                    documents=documents_chunk,
+                                                                    show_progress=True,
+                                                                    storage_context = self.storage_context
+                        )
+
+                    elif self.index_type == "PropertyGraphIndex":
+                        self.index = PropertyGraphIndex.from_documents(
+                                                                    documents=documents_chunk,
+                                                                    show_progress=True,
+                                                                    kg_extractors = self.kg_extractors,
+                                                                    # embed_kg_nodes = False,
+                                                                    )
+
+            with safe_operation("Storage"):
+                self.index.storage_context.persist(self.persist_path)
+
         return 'builded'
+    
+    def reload_retriever(self):
+        self.retriever = None
 
     def get_retriever(self, similarity_top_k: int = 5):
         """
@@ -97,8 +128,8 @@ class Queryer(QueryerABC):
                                                  )
         return self.retriever
 
-    def retrieve(self, query_text: str, similarity_top_k: int = 5):
-        """# TODO 改名, 容易写错
+    def retrieve_search(self, query_text: str, similarity_top_k: int = 5):
+        """
         使用检索器进行检索。
         """
         retriever = self.get_retriever(similarity_top_k=similarity_top_k)
@@ -108,17 +139,18 @@ class Queryer(QueryerABC):
         """
         获取查询引擎（QueryEngine），如有必要则从持久化目录加载索引。
         """
-        if self.query_engine is not None:
-            return self.query_engine
+        if self.query_pipeline is not None:
+            return self.query_pipeline
+
 
         if not self.persist_path or not os.path.exists(self.persist_path):
             raise ValueError("索引持久化目录不存在，无法构建查询引擎。")
 
         storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
         self.index = load_index_from_storage(storage_context=storage_context)
-        self.query_engine = self.index.as_query_engine(similarity_top_k=similarity_top_k,
+        self.query_pipeline = self.index.as_query_engine(similarity_top_k=similarity_top_k,
                                                        include_text=True,)
-        return self.query_engine
+        return self.query_pipeline
 
     def query(self, prompt: str, similarity_top_k: int = 3):
         """

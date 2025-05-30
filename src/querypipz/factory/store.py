@@ -104,6 +104,9 @@ class GraphStore:
         if graph_type.value == 'SimpleGraphStore':
             instance = SimpleGraphStore()
         elif graph_type.value == 'NebulaGraphStore':
+            os.environ["NEBULA_USER"] = "root"
+            os.environ["NEBULA_PASSWORD"] = "nebula"
+            os.environ["NEBULA_ADDRESS"] = "127.0.0.1:9669"
             # Initialize NebulaPropertyGraphStore
             graph_store = NebulaPropertyGraphStore(
                 space="llamaindex_nebula_property_graph",
