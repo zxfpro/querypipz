@@ -1,27 +1,48 @@
-from llama_index.core import VectorStoreIndex
-from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core import Document
-from llama_index.core.agent import ReActAgent
-from llama_index.core.chat_engine.types import BaseChatEngine
-from llama_index.core import Settings
-from llama_index.core import get_response_synthesizer
-from llama_index.llms.openai import OpenAI
-from llama_index.core import PromptTemplate
-from llama_index.core.response_synthesizers import BaseSynthesizer
-from llama_index.core.query_engine import CustomQueryEngine
-from llama_index.core.retrievers import BaseRetriever
-from llama_index.core.base.response.schema import Response
-from llama_index.core.base.response.schema import StreamingResponse
-from llama_index.core import SimpleDirectoryReader
-from llama_index.core.extractors import BaseExtractor
-from llama_index.core.readers.base import BaseReader
-from typing import List, Dict,Optional
 from enum import Enum
-import os
-import random
-import shutil
-import re
+from typing import List, Any
+
+
+class QueryType(Enum):
+    Simple = 'Simple'
+    Simple2 = 'Simple2'
+    # 添加更多选项
+
+class Query:
+    def __new__(cls, type: QueryType) -> Any:
+        assert type.value in [i.value for i in QueryType]
+        instance = None
+
+        if type.value == 'Simple':
+
+            # instance = SomeClass(param1=value1, param2=value2)
+            pass
+
+        elif type.value == 'Simple2':
+
+            # instance = AnotherClass(param1=value1, param2=value2)
+            pass
+
+
+        else:
+            raise Exception('Unknown type')
+
+        return instance
+
+
+# def build_query_pipeline(self):
+#     # configure response synthesizer
+#     response_synthesizer = get_response_synthesizer()
+
+#     # assemble query engine
+#     query_engine = RetrieverQueryEngine(
+#         retriever=self.query.retriver,
+#         response_synthesizer=response_synthesizer,
+#         node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
+#     )
+#     self.query_pipeline = query_engine
+
+
+############ VVVVVV##########
 # 定义提示模板字符串
 template_str = """
 Take a deep breath and work on this problem step-by-step
@@ -88,3 +109,27 @@ class PythonQueryEngine(CustomQueryEngine):
             return Response(response=response.text,source_nodes=nodes) # TODO 增加metadata
 
 
+
+# 具体生成器
+class QueryBuilder3(QueryBuilder):
+    '''
+
+
+    '''
+   
+
+    def get_query(self):
+        # 例如：
+            # instance = AnotherClass(param1=value1, param2=value2)
+        
+        
+        retriever = index.as_retriever(similarity_top_k=similarity_top_k)
+        query_engine = PythonQueryEngine(
+                retriever=retriever,
+                response_synthesizer=get_response_synthesizer(response_mode="compact"),
+                llm=Settings.llm,
+                qa_prompt=qa_prompt,
+                stream = True,
+            )
+
+        return query_engine
