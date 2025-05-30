@@ -313,7 +313,6 @@ class HistoryMemory2Builder(QueryBuilder):
 
 
 class TestGraphBuilder(QueryBuilder):
-    # TODO
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph'):
         self.query = Queryer()
         self.query.persist_path = persist_path
@@ -359,7 +358,6 @@ class TestGraphBuilder(QueryBuilder):
         self.query.tools = dynamic_method.__get__(self.query,Queryer)
 
 class Test2GraphBuilder(TestGraphBuilder):
-    # TODO
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph2'):
         self.query = Queryer()
         self.query.persist_path = persist_path

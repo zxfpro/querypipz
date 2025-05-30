@@ -1,50 +1,14 @@
-
+""" splitter """
 from enum import Enum
+import re
 from typing import List, Any
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.node_parser import TokenTextSplitter
-from llama_index.core.text_splitter import SentenceSplitter
 from llama_index.core.node_parser import CodeSplitter
-import re
-
-
-class CustomTextSplitter(SentenceSplitter):
-    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 100, **kwargs):
-        super().__init__(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            **kwargs
-        )
-    
-    def split_text(self, text: str) -> List[str]:
-        """
-        自定义分割逻辑
-        """
-        chunks = []
-        
-        # 按段落分割
-        paragraphs = text.split('\n\n')
-        current_chunk = ""
-        
-        for paragraph in paragraphs:
-            if len(current_chunk) + len(paragraph) > self.chunk_size:
-                if current_chunk:
-                    chunks.append(current_chunk.strip())
-                    # 保留重叠部分
-                    overlap_text = current_chunk[-self.chunk_overlap:] if len(current_chunk) > self.chunk_overlap else current_chunk
-                    current_chunk = overlap_text + paragraph
-                else:
-                    current_chunk = paragraph
-            else:
-                current_chunk += "\n\n" + paragraph if current_chunk else paragraph
-        
-        if current_chunk:
-            chunks.append(current_chunk.strip())
-        
-        return chunks
 
 
 class DeDaoJYRKTextSplitter(SentenceSplitter):
+    """ other """
     def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 100, **kwargs):
         super().__init__(
             chunk_size=chunk_size,
@@ -69,10 +33,11 @@ class DeDaoJYRKTextSplitter(SentenceSplitter):
 #             chunks = self._merge(splits, chunk_size)
 
 #             event.on_end(payload={EventPayload.CHUNKS: chunks})
-        chunks = text.split('\n\n')        
-        return chunks# list[str]
+        chunks = text.split('\n\n')
+        return chunks
 
 class HistoryMemorySplitter(SentenceSplitter):
+    """ historyMemory"""
     def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 100, **kwargs):
         super().__init__(
             chunk_size=chunk_size,
@@ -102,60 +67,62 @@ class HistoryMemorySplitter(SentenceSplitter):
             qa_strings.append(match.strip()) # 将匹配到的完整问答对字符串添加到列表中
 
         return qa_strings
-   
-    def split_text(self, text: str) -> List[str]:
+
+    def _split_text(self, text: str, chunk_size: int) -> List[str]:
         """
         自定义分割逻辑
         """
         if text == "":
             return [text]
-        
-        # 按段落分割
+
         chunks = self.split_qa_strings(text)
-     
-        return chunks# list[str]
-        
+        return chunks
+
 
 class SplitterType(Enum):
+    """ enum """
     Simple = 'Simple'
     CodeSplitter = 'CodeSplitter'
     TokenTextSplitter = "TokenTextSplitter"
-    CustomTextSplitter = "CustomTextSplitter"
     DeDaoJYRKTextSplitter = "DeDaoJYRKTextSplitter"
     HistoryMemorySplitter = "HistoryMemorySplitter"
     # 添加更多选项
 
+
 class Splitter:
-    def __new__(cls, type: SplitterType) -> Any:
+    """ splitter """
+    def __new__(cls, splitter_type: SplitterType | str) -> Any:
         assert type.value in [i.value for i in SplitterType]
+
+        if isinstance(splitter_type,SplitterType):
+            assert splitter_type.value in [i.value for i in SplitterType]
+            key_name = splitter_type.value
+        else:
+            assert splitter_type in [i.value for i in SplitterType]
+            key_name = splitter_type
         instance = None
 
-        if type.value == 'Simple':
+        if key_name == 'Simple':
             instance = SentenceSplitter(chunk_size=4096)
 
-        elif type.value =="CustomTextSplitter":
-            instance = CustomTextSplitter()
-
-        elif type.value =="DeDaoJYRKTextSplitter":
+        elif key_name =="DeDaoJYRKTextSplitter":
             instance = DeDaoJYRKTextSplitter()
 
-
-        elif type.value == 'CodeSplitter':
-            splitter = CodeSplitter(
+        elif key_name == 'CodeSplitter':
+            instance = CodeSplitter(
                 language="python",
                 chunk_lines=40,  # lines per chunk
                 chunk_lines_overlap=15,  # lines overlap between chunks
                 max_chars=1500,  # max chars per chunk
             )
-            instance = splitter
 
-        elif type.value == 'TokenTextSplitter':
+        elif key_name == 'TokenTextSplitter':
             instance = TokenTextSplitter()
 
-        elif type.value == "HistoryMemorySplitter":
+        elif key_name == "HistoryMemorySplitter":
             instance = HistoryMemorySplitter()
-            
+
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance

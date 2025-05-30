@@ -56,8 +56,10 @@ class Queryer(QueryerABC):
             self.index.insert(documents[0])
         self.index.storage_context.persist(self.persist_path)
 
-    def build(self):
-        #TODO 会覆盖之前的内容
+    def build(self,cover = False):
+        if os.path.exists(self.persist_path) and cover is False:
+            return 'index exists, you can build force with cover set True'
+
         if self.reader is None:
             # raise ValueError("Reader is not set. Call build_reader first.")
             if self.index_type == "VectorStoreIndex":

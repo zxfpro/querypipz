@@ -1,12 +1,12 @@
-
+""" embedding """
 from enum import Enum
-from typing import List, Any
+from typing import Any
 from llama_index.core import Settings
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.core.node_parser import SentenceSplitter
-
 
 class EmbeddingType(Enum):
+    """enum
+    """
     DefaultEmbedding = "DefaultEmbedding"
     OpenAIEmbedding = 'OpenAIEmbedding'
     Similaritytext3sEmbedding = "Similaritytext3sEmbedding"
@@ -14,54 +14,58 @@ class EmbeddingType(Enum):
     Searchtext3sEmbedding = "Searchtext3sEmbedding"
     Searchtext3lEmbedding = "Searchtext3lEmbedding"
 
-    Simple2 = 'Simple2'
     # 添加更多选项
 
 class Embedding:
-    def __new__(cls, type: EmbeddingType) -> Any:
-        assert type.value in [i.value for i in EmbeddingType]
+    """embedding 方案
+    """
+    def __new__(cls, emb_type: EmbeddingType | str) -> Any:
+        if isinstance(emb_type,EmbeddingType):
+            assert emb_type.value in [i.value for i in EmbeddingType]
+            key_name = emb_type.value
+        else:
+            assert emb_type in [i.value for i in EmbeddingType]
+            key_name = emb_type
+
         instance = None
 
-        if type.value == 'DefaultEmbedding':
+        if key_name == 'DefaultEmbedding':
             instance = Settings.embed_model
 
-        elif type.value == 'Similaritytext3sEmbedding':
+        elif key_name == 'Similaritytext3sEmbedding':
             instance = OpenAIEmbedding(
                  mode='similarity', #text_search
                  model='text-embedding-3-small',
                  api_base=Settings.api_base,
                  api_key=Settings.api_key)
 
-        elif type.value == 'Similaritytext3lEmbedding':
+        elif key_name == 'Similaritytext3lEmbedding':
             instance = OpenAIEmbedding(
                  mode='similarity', #text_search
                  model='text-embedding-3-large',
                  api_base=Settings.api_base,
                  api_key=Settings.api_key)
-            
-        elif type.value == 'Searchtext3sEmbedding':
+
+        elif key_name == 'Searchtext3sEmbedding':
             instance = OpenAIEmbedding(
-                 mode='text_search', 
+                 mode='text_search',
                  model='text-embedding-3-small',
                  api_base=Settings.api_base,
                  api_key=Settings.api_key)
 
-        elif type.value == 'Searchtext3lEmbedding':
+        elif key_name == 'Searchtext3lEmbedding':
             instance = OpenAIEmbedding(
-                 mode='text_search', 
+                 mode='text_search',
                  model='text-embedding-3-large',
                  api_base=Settings.api_base,
                  api_key=Settings.api_key)
 
 
-        elif type.value == 'OpenAIEmbedding':
+        elif key_name == 'OpenAIEmbedding':
             instance = OpenAIEmbedding(api_base=Settings.api_base,
                                        api_key=Settings.api_key)
 
-        elif type.value == 'Simple2':
-            instance = SentenceSplitter(chunk_size=512, chunk_overlap=10)
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance
-
