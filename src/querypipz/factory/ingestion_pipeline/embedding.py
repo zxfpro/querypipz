@@ -1,18 +1,25 @@
 """ embedding """
 from enum import Enum
+import os
 from typing import Any
 from llama_index.core import Settings
 from llama_index.embeddings.openai import OpenAIEmbedding
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("BIANXIE_API_KEY")
+api_base = os.getenv("BIANXIE_BASE")
+
 
 class EmbeddingType(Enum):
     """enum
     """
-    DefaultEmbedding = "DefaultEmbedding"
-    OpenAIEmbedding = 'OpenAIEmbedding'
-    Similaritytext3sEmbedding = "Similaritytext3sEmbedding"
-    Similaritytext3lEmbedding = "Similaritytext3lEmbedding"
-    Searchtext3sEmbedding = "Searchtext3sEmbedding"
-    Searchtext3lEmbedding = "Searchtext3lEmbedding"
+    DEFAULT_EMBEDDING = "DefaultEmbedding"
+    OPENAI_EMBEDDING = 'OpenAIEmbedding'
+    SIMILARITY_TEXT_3L_EMBEDDING = "Similaritytext3sEmbedding"
+    SIMILARITY_TEXT_3L_EMBEDDING = "Similaritytext3lEmbedding"
+    SEARCH_TEXT_3S_EMBEDDING = "Searchtext3sEmbedding"
+    SEARCH_TEXT_3L_EMBEDDING = "Searchtext3lEmbedding"
 
     # 添加更多选项
 
@@ -36,34 +43,34 @@ class Embedding:
             instance = OpenAIEmbedding(
                  mode='similarity', #text_search
                  model='text-embedding-3-small',
-                 api_base=Settings.api_base,
-                 api_key=Settings.api_key)
+                 api_base=api_base,
+                 api_key=api_key)
 
         elif key_name == 'Similaritytext3lEmbedding':
             instance = OpenAIEmbedding(
                  mode='similarity', #text_search
                  model='text-embedding-3-large',
-                 api_base=Settings.api_base,
-                 api_key=Settings.api_key)
+                 api_base=api_base,
+                 api_key=api_key)
 
         elif key_name == 'Searchtext3sEmbedding':
             instance = OpenAIEmbedding(
                  mode='text_search',
                  model='text-embedding-3-small',
-                 api_base=Settings.api_base,
-                 api_key=Settings.api_key)
+                 api_base=api_base,
+                 api_key=api_key)
 
         elif key_name == 'Searchtext3lEmbedding':
             instance = OpenAIEmbedding(
                  mode='text_search',
                  model='text-embedding-3-large',
-                 api_base=Settings.api_base,
-                 api_key=Settings.api_key)
+                 api_base=api_base,
+                 api_key=api_key)
 
 
         elif key_name == 'OpenAIEmbedding':
-            instance = OpenAIEmbedding(api_base=Settings.api_base,
-                                       api_key=Settings.api_key)
+            instance = OpenAIEmbedding(api_base=api_base,
+                                       api_key=api_key)
 
         else:
             raise TypeError('Unknown type')

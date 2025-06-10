@@ -15,15 +15,22 @@ from pinecone import Pinecone
 import faiss
 
 
+
+
+
+
+
+
 class VectorStoreType(Enum):
     """_summary_
 
     Args:
         Enum (_type_): _description_
     """
-    SimpleVectorStore = 'SimpleVectorStore'
+    SIMPLE_VECTOR_STORE = 'SimpleVectorStore'
     FAISS = 'FAISS'
     PINECONE = "PINECONE"
+    PG_VECTOR_STORE = "pgVectorStore"
     # 添加更多选项
 
 class VectorStore:
@@ -50,7 +57,24 @@ class VectorStore:
                                             pinecone_index=pinecone_index, namespace="test_05_14"
                                         )
             instance = vector_store
-
+        elif vector_type.value == "pgVectorStore":
+            
+            vector_store = PGVectorStore.from_params(
+                database="vector_db",
+                host=self.info.host,
+                password=self.info.password,
+                port=self.info.port,
+                user=self.info.user,
+                table_name=index_name,
+                embed_dim=1536,  # openai embedding dimension
+                hnsw_kwargs={
+                    "hnsw_m": 16,
+                    "hnsw_ef_construction": 64,
+                    "hnsw_ef_search": 40,
+                    "hnsw_dist_method": "vector_cosine_ops",
+                    },
+            )
+            instance = vector_store
 
         else:
             raise TypeError('Unknown type')
@@ -64,7 +88,7 @@ class DocStoreType(Enum):
     Args:
         Enum (_type_): _description_
     """
-    SimpleDocumentStore = 'SimpleDocumentStore'
+    SIMPLE_DOCUMENT_STORE = 'SimpleDocumentStore'
     # Add more options as needed
 
 
@@ -89,10 +113,10 @@ class GraphStoreType(Enum):
     Args:
         Enum (_type_): _description_
     """
-    SimpleGraphStore = 'SimpleGraphStore'
-    NebulaGraphStore = 'NebulaGraphStore'
-    Neo4jGraphStore = 'Neo4jGraphStore'
-    MemgraphGraphStore = 'MemgraphGraphStore'
+    SIMPLE_GRAPH_STORE = 'SimpleGraphStore'
+    NEBULA_GRAPH_STORE = 'NebulaGraphStore'
+    NEO4J_GRAPH_STORE = 'Neo4jGraphStore'
+    MEMGRAPH_GRAPH_STORE = 'MemgraphGraphStore'
 
 class GraphStore:
     """GraphStore
@@ -109,7 +133,7 @@ class GraphStore:
             os.environ["NEBULA_ADDRESS"] = "127.0.0.1:9669"
             # Initialize NebulaPropertyGraphStore
             graph_store = NebulaPropertyGraphStore(
-                space="llamaindex_nebula_property_graph",
+                space="llamaindex",
                 overwrite=True  # Overwrite existing space if needed
             )
             instance = graph_store
@@ -118,7 +142,7 @@ class GraphStore:
         elif graph_type.value == 'Neo4jGraphStore':
             graph_store = Neo4jPropertyGraphStore(
                 username="neo4j",
-                password="llamaindex",
+                password="ZHF4233613",
                 url="bolt://localhost:7687",
             )
             instance = graph_store

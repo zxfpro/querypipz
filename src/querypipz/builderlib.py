@@ -22,11 +22,65 @@ from .factory.ingestion_pipeline import Cleaner,CleanerType, Embedding, Embeddin
 from .factory.ingestion_pipeline import Extractor,ExtractorType
 from .factory.store import VectorStore,VectorStoreType
 from .queryer import Queryer
-
-
+from .factory.store import GraphStore,GraphStoreType
+from .factory.ingestion_pipeline.extractor import GraphExtractor,GraphExtractorType
 
 
 # index.property_graph_store.save_networkx_graph(name="./kg3.html") # for debug
+
+class BaseQueryBuilder():
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/date'): # 这里设定知识库的本地存储位置
+        self.query = Queryer() # 固定
+        self.query.persist_path = persist_path # 固定
+
+    def set_llm(self):
+        load_dotenv()
+        api_key = os.getenv("BIANXIE_API_KEY")
+        api_base = os.getenv("BIANXIE_BASE")
+        # Settings.llm = OpenAI(model="gpt-4.1",api_base=api_base,api_key=api_key)
+
+    def build_reader(self):
+        file_path= '/Users/zhaoxuefeng/GitHub/obsidian/工作/日记'
+        self.query.reader = SimpleDirectoryReader(input_dir=file_path,
+                                          file_extractor = {".md": Reader(ReaderType.ObsidianReaderCus)},
+                                          recursive=True,
+                                          )
+    def build_ingestion_pipeline(self):
+        self.query.ingestion_pipeline = IngestionPipeline(transformations=[Splitter(SplitterType.TokenTextSplitter),
+                                                                           Embedding(EmbeddingType.OpenAIEmbedding),
+                                                                           ])
+
+    def build_kg_extractors(self):
+        self.query.kg_extractors = [GraphExtractor(GraphExtractorType.SchemaLLMPathExtractor3)]
+
+
+    def build_storage_context(self):
+        self.query.storage_context = StorageContext.from_defaults(vector_store=VectorStore(VectorStoreType.FAISS),
+                                                                  property_graph_store=GraphStore(GraphStoreType.Neo4jGraphStore),)
+
+    def build_index(self):
+        self.query.index_type = "VectorStoreIndex"
+
+    def build_retriver(self):
+        self.query.retriever_nest = None
+
+    def build_query_pipeline(self): # query 可以直接返回query -> 也可以使用queryengine 进行包装
+        self.query.query_engine = None
+
+
+    def build_tools(self): # 增加一些特异性的函数, 使用以下方法进行添加
+        def dynamic_method(self, name_path:str):
+            return self.index.property_graph_store.save_networkx_graph(name=name_path) 
+        self.query.tools = dynamic_method.__get__(self.query,Queryer)
+        # self.query.tools2 = ...
+
+    def get_queryer(self):# 默认
+        return self.query
+
+
+
+
+
 
 class ObsidianDateBuilder(QueryBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/date'):
@@ -357,6 +411,9 @@ class TestGraphBuilder(QueryBuilder):
             return self.index.property_graph_store.save_networkx_graph(name=name_path) # for debug
         self.query.tools = dynamic_method.__get__(self.query,Queryer)
 
+
+
+
 class Test2GraphBuilder(TestGraphBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph2'):
         self.query = Queryer()
@@ -368,3 +425,47 @@ class Test2GraphBuilder(TestGraphBuilder):
                                     ImplicitPathExtractor(),]
 
 
+
+class Test3GraphBuilder(QueryBuilder):
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph3'):
+        self.query = Queryer()
+        self.query.persist_path = persist_path
+
+
+    def set_llm(self):
+        load_dotenv()
+        api_key = os.getenv("BIANXIE_API_KEY")
+        api_base = os.getenv("BIANXIE_BASE")
+        # Settings.llm = OpenAI(model="gpt-4.1",api_base=api_base,api_key=api_key)
+
+    def build_reader(self):
+        file_path= '/Users/zhaoxuefeng/本地文稿/百度空间/实验广场/实验/data/yingjiememorycard'
+        self.query.reader = SimpleDirectoryReader(input_dir=file_path)
+    def build_ingestion_pipeline(self):
+        self.query.ingestion_pipeline = IngestionPipeline(transformations=[Splitter(splitter_type=SplitterType.TestSplitter)])
+
+    def build_storage_context(self):
+        self.query.storage_context = StorageContext.from_defaults(vector_store=VectorStore(VectorStoreType.FAISS),
+                                                                  property_graph_store=GraphStore(GraphStoreType.Neo4jGraphStore),)
+
+    def build_index(self):
+        self.query.index_type = "PropertyGraphIndex"
+
+
+    def build_retriver(self):
+        self.query.retriever_nest = None
+
+
+    def build_query_pipeline(self):
+        self.query.query_engine = None
+
+    def get_queryer(self):
+        return self.query
+
+    def build_kg_extractors(self):
+        self.query.kg_extractors = [GraphExtractor(GraphExtractorType.SchemaLLMPathExtractor3)]
+
+    def build_tools(self):
+        def dynamic_method(self, name_path:str):
+            return self.index.property_graph_store.save_networkx_graph(name=name_path) # for debug
+        self.query.tools = dynamic_method.__get__(self.query,Queryer)

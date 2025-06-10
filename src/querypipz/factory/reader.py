@@ -4,8 +4,6 @@ from enum import Enum
 from typing import List, Any, Dict,Optional
 from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
-from llama_index.core import download_loader
-from llama_index.core import Document
 from llama_index.readers.database import DatabaseReader
 import yaml
 import PyPDF2
@@ -110,8 +108,10 @@ class SimplesReader(BaseReader):
     Args:
         BaseReader (_type_): _description_
     """
+
     def load_data(self, file_path: str, extra_info: Optional[Dict] = None) -> List[Document]:
-        # 自定义读取逻辑
+        """ # 自定义读取逻辑 """
+        extra_info
         text = extract_text_from_pdf(file_path)
         document = Document(text=text,
                             metadata={"topic":'',
@@ -120,28 +120,36 @@ class SimplesReader(BaseReader):
                            )
         return [document]
 
+
 class ReaderType(Enum):
     """_summary_
 
     Args:
         Enum (_type_): _description_
     """
-    ObsidianReaderCus = 'ObsidianReaderCus'
-    PDFFileReader = "PDFFileReader"
-    DatabaseReader = 'DatabaseReader'
+    CUS_OBSIDIAN_READER = 'ObsidianReaderCus'
+    PDF_FILE_READER = "PDFFileReader"
+    DATA_BASE_READER = 'DatabaseReader'
 
 class Reader:
     """_summary_
     """
-    def __new__(cls, type: ReaderType) -> Any:
-        assert type.value in [i.value for i in ReaderType]
+    def __new__(cls, reader_type: ReaderType | str) -> Any:
+        assert reader_type.value in [i.value for i in ReaderType]
+
+        if isinstance(reader_type,ReaderType):
+            assert reader_type.value in [i.value for i in ReaderType]
+            key_name = reader_type.value
+        else:
+            assert reader_type in [i.value for i in ReaderType]
+            key_name = reader_type
         instance = None
 
-        if type.value == 'ObsidianReaderCus':
+        if key_name == 'ObsidianReaderCus':
             instance = ObsidianReaderCus()
-        elif type.value == 'PDFFileReader':
+        elif key_name == 'PDFFileReader':
             instance = PDFFileReader()
-        elif type.value == 'DatabaseReader':
+        elif key_name == 'DatabaseReader':
             # instance = AnotherClass(param1=value1, param2=value2)
             reader = DatabaseReader(
                 scheme=os.getenv("DB_SCHEME"),
@@ -158,27 +166,3 @@ class Reader:
             raise TypeError('Unknown type')
 
         return instance
-
-
-"""
-
-from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
-
-# Create a two entity nodes
-entity1 = EntityNode(label="PERSON", name="Logan", properties={"age": 28})
-entity2 = EntityNode(label="ORGANIZATION", name="LlamaIndex")
-
-# Create a relation
-relation = Relation(
-    label="WORKS_FOR",
-    source_id=entity1.id,
-    target_id=entity2.id,
-    properties={"since": 2023},
-)
-
-pg_store.upsert_nodes([entity1, entity2])
-pg_store.upsert_relations([relation])
-# https://docs.llamaindex.ai/en/stable/examples/property_graph/graph_store/
-
-%pip install jupyter-nebulagraph
-"""

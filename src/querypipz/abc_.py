@@ -15,17 +15,34 @@ class QueryerABC(ABC):
         self.persist_path = None
         self.reader: Optional[SimpleDirectoryReader] = None
         self.ingestion_pipeline: Optional[IngestionPipeline] = None
+        self.kg_extractors = None
         self.storage_context = None
         self.index_type = None
         self.retriever_nest = None
+        self.query_nest = None
         self.query_pipeline = None
         self.retriever = None
         self.index: Optional[VectorStoreIndex] = None
-        self.kg_extractors = None
+        
 
     @abstractmethod
     def build(self):
-        """Build the queryer components"""
+        """ init a RAG query """
+        raise NotImplementedError
+
+    @abstractmethod
+    def load(self):
+        """ load a exist RAG query"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def reload(self):
+        """ reload a exist RAG query"""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def update(self, prompt: str):
+        """Update the index"""
         raise NotImplementedError
 
     @abstractmethod
@@ -38,10 +55,7 @@ class QueryerABC(ABC):
         """Retrieve relevant documents"""
         raise NotImplementedError
 
-    @abstractmethod
-    def update(self, prompt: str):
-        """Update the index"""
-        raise NotImplementedError
+
 
 
 class QueryBuilder(ABC):
@@ -76,6 +90,11 @@ class QueryBuilder(ABC):
     def build_ingestion_pipeline(self):
         """Build ingestion pipeline"""
         raise NotImplementedError
+    
+    @abstractmethod
+    def build_kg_extractors(self):
+        """Build knowledge graph extractors"""
+        raise NotImplementedError
 
     @abstractmethod
     def build_storage_context(self):
@@ -98,16 +117,14 @@ class QueryBuilder(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def build_tools(self):
+        """Build tools"""
+        raise NotImplementedError
+    
+    @abstractmethod
     def get_queryer(self):
         """Get the built queryer"""
         raise NotImplementedError
 
-    @abstractmethod
-    def build_tools(self):
-        """Build tools"""
-        raise NotImplementedError
 
-    @abstractmethod
-    def build_kg_extractors(self):
-        """Build knowledge graph extractors"""
-        raise NotImplementedError
+

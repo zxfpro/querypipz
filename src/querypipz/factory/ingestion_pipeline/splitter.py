@@ -78,21 +78,53 @@ class HistoryMemorySplitter(SentenceSplitter):
         chunks = self.split_qa_strings(text)
         return chunks
 
+class TestSplitter(SentenceSplitter):
+    """ historyMemory"""
+    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 100, **kwargs):
+        super().__init__(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            **kwargs
+        )
+
+    def split_qa_strings(self,text) -> List[str]:
+        """
+        将包含 user: 和 assistant: 标记的文本拆分成一对一对的问答对字符串。
+
+        Args:
+        text: 包含问答对的字符串。
+
+        Returns:
+        一个列表，其中每个元素都是一个字符串，包含一个完整的问答对
+        （从 user: 开始到其对应的 assistant: 结束）。
+        如果存在不成对的 user 或 assistant，它们将被忽略。
+        """
+        return text.split("\n")
+
+    def _split_text(self, text: str, chunk_size: int) -> List[str]:
+        """
+        自定义分割逻辑
+        """
+        if text == "":
+            return [text]
+
+        chunks = self.split_qa_strings(text)
+        return chunks
 
 class SplitterType(Enum):
     """ enum """
-    Simple = 'Simple'
-    CodeSplitter = 'CodeSplitter'
-    TokenTextSplitter = "TokenTextSplitter"
-    DeDaoJYRKTextSplitter = "DeDaoJYRKTextSplitter"
-    HistoryMemorySplitter = "HistoryMemorySplitter"
+    SIMPLE = 'Simple'
+    CODE_SPLITTER = 'CodeSplitter'
+    TOKEN_TEXT_SPLITTER = "TokenTextSplitter"
+    DEDAO_JYRK_TEXT_SPLITTER = "DeDaoJYRKTextSplitter"
+    HISTORY_MEMORY_SPLITTER = "HistoryMemorySplitter"
+    TEST_SPLITTER = "TestSplitter"
     # 添加更多选项
-
 
 class Splitter:
     """ splitter """
     def __new__(cls, splitter_type: SplitterType | str) -> Any:
-        assert type.value in [i.value for i in SplitterType]
+        assert splitter_type.value in [i.value for i in SplitterType]
 
         if isinstance(splitter_type,SplitterType):
             assert splitter_type.value in [i.value for i in SplitterType]
@@ -104,6 +136,9 @@ class Splitter:
 
         if key_name == 'Simple':
             instance = SentenceSplitter(chunk_size=4096)
+
+        elif key_name == "TestSplitter":
+            instance = TestSplitter()
 
         elif key_name =="DeDaoJYRKTextSplitter":
             instance = DeDaoJYRKTextSplitter()
