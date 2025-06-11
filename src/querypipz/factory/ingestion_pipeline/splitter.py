@@ -135,7 +135,7 @@ class Splitter:
         instance = None
 
         if key_name == 'Simple':
-            instance = SentenceSplitter(chunk_size=4096)
+            instance = SentenceSplitter(chunk_size=4096, chunk_overlap=50)
 
         elif key_name == "TestSplitter":
             instance = TestSplitter()

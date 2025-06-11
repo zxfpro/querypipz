@@ -16,7 +16,7 @@ class EmbeddingType(Enum):
     """
     DEFAULT_EMBEDDING = "DefaultEmbedding"
     OPENAI_EMBEDDING = 'OpenAIEmbedding'
-    SIMILARITY_TEXT_3L_EMBEDDING = "Similaritytext3sEmbedding"
+    SIMILARITY_TEXT_3S_EMBEDDING = "Similaritytext3sEmbedding"
     SIMILARITY_TEXT_3L_EMBEDDING = "Similaritytext3lEmbedding"
     SEARCH_TEXT_3S_EMBEDDING = "Searchtext3sEmbedding"
     SEARCH_TEXT_3L_EMBEDDING = "Searchtext3lEmbedding"

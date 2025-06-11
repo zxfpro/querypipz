@@ -9,9 +9,9 @@ load_dotenv()
 api_key = os.getenv("BIANXIE_API_KEY")
 api_base = os.getenv("BIANXIE_BASE")
 
-Settings.embed_model = OpenAIEmbedding(api_key=api_key,api_base =api_base)
+Settings.embed_model = OpenAIEmbedding(model_name="text-embedding-3-small",
+                                       api_key=api_key,api_base =api_base)
 Settings.llm = OpenAI(model="gpt-4o",api_base=api_base,api_key=api_key)
-Settings.api_key = api_key
-Settings.api_base = api_base
 
-from .director import BuilderFactory,BuilderType,Director
+from querypipz.director import Director
+from querypipz.builder import BuilderFactory, BuilderType

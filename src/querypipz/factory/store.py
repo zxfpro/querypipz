@@ -10,14 +10,8 @@ from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.graph_stores.nebula import NebulaPropertyGraphStore
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.graph_stores.memgraph import MemgraphPropertyGraphStore
-
 from pinecone import Pinecone
 import faiss
-
-
-
-
-
 
 
 
@@ -30,25 +24,31 @@ class VectorStoreType(Enum):
     SIMPLE_VECTOR_STORE = 'SimpleVectorStore'
     FAISS = 'FAISS'
     PINECONE = "PINECONE"
-    PG_VECTOR_STORE = "pgVectorStore"
     # 添加更多选项
 
 class VectorStore:
     """_summary_
     """
-    def __new__(cls, vector_type: VectorStoreType) -> Any:
+    def __new__(cls, vector_type: VectorStoreType| str) -> Any:
+
         assert vector_type.value in [i.value for i in VectorStoreType]
+        if isinstance(vector_type,VectorStoreType):
+            assert vector_type.value in [i.value for i in VectorStoreType]
+            key_name = vector_type.value
+        else:
+            assert vector_type in [i.value for i in VectorStoreType]
+            key_name = vector_type
         instance = None
 
-        if vector_type.value == 'SimpleVectorStore':
+        if key_name == 'SimpleVectorStore':
             instance = SimpleVectorStore()
 
-        elif vector_type.value == 'FAISS':
+        elif key_name == 'FAISS':
             # Create a FAISS index
             faiss_index = faiss.IndexFlatL2(1536)  # Example dimension
             instance = FaissVectorStore(faiss_index=faiss_index)
 
-        elif vector_type.value == 'PINECONE':
+        elif key_name == 'PINECONE':
             # Create a FAISS index
             api_key = os.environ["PINECONE_API_KEY"]
             pc = Pinecone(api_key=api_key)
@@ -56,24 +56,6 @@ class VectorStore:
             vector_store = PineconeVectorStore(
                                             pinecone_index=pinecone_index, namespace="test_05_14"
                                         )
-            instance = vector_store
-        elif vector_type.value == "pgVectorStore":
-            
-            vector_store = PGVectorStore.from_params(
-                database="vector_db",
-                host=self.info.host,
-                password=self.info.password,
-                port=self.info.port,
-                user=self.info.user,
-                table_name=index_name,
-                embed_dim=1536,  # openai embedding dimension
-                hnsw_kwargs={
-                    "hnsw_m": 16,
-                    "hnsw_ef_construction": 64,
-                    "hnsw_ef_search": 40,
-                    "hnsw_dist_method": "vector_cosine_ops",
-                    },
-            )
             instance = vector_store
 
         else:
@@ -95,11 +77,18 @@ class DocStoreType(Enum):
 class DocStore:
     """DocStore
     """
-    def __new__(cls, doc_type: DocStoreType) -> Any:
+    def __new__(cls, doc_type: DocStoreType | str) -> Any:
         assert doc_type.value in [i.value for i in DocStoreType]
+
+        if isinstance(doc_type,DocStoreType):
+            assert doc_type.value in [i.value for i in DocStoreType]
+            key_name = doc_type.value
+        else:
+            assert doc_type in [i.value for i in DocStoreType]
+            key_name = doc_type
         instance = None
 
-        if doc_type.value == 'SimpleDocumentStore':
+        if key_name == 'SimpleDocumentStore':
             instance = SimpleDocumentStore()
         else:
             raise TypeError('Unknown type')
@@ -121,13 +110,21 @@ class GraphStoreType(Enum):
 class GraphStore:
     """GraphStore
     """
-    def __new__(cls, graph_type: GraphStoreType) -> Any:
+    def __new__(cls, graph_type: GraphStoreType | str) -> Any:
+
         assert graph_type.value in [i.value for i in GraphStoreType]
+
+        if isinstance(graph_type,GraphStoreType):
+            assert graph_type.value in [i.value for i in GraphStoreType]
+            key_name = graph_type.value
+        else:
+            assert graph_type in [i.value for i in GraphStoreType]
+            key_name = graph_type
         instance = None
 
-        if graph_type.value == 'SimpleGraphStore':
+        if key_name == 'SimpleGraphStore':
             instance = SimpleGraphStore()
-        elif graph_type.value == 'NebulaGraphStore':
+        elif key_name == 'NebulaGraphStore':
             os.environ["NEBULA_USER"] = "root"
             os.environ["NEBULA_PASSWORD"] = "nebula"
             os.environ["NEBULA_ADDRESS"] = "127.0.0.1:9669"
@@ -138,8 +135,7 @@ class GraphStore:
             )
             instance = graph_store
 
-
-        elif graph_type.value == 'Neo4jGraphStore':
+        elif key_name == 'Neo4jGraphStore':
             graph_store = Neo4jPropertyGraphStore(
                 username="neo4j",
                 password="ZHF4233613",
@@ -147,7 +143,7 @@ class GraphStore:
             )
             instance = graph_store
 
-        elif graph_type.value == 'MemgraphGraphStore':
+        elif key_name == 'MemgraphGraphStore':
             graph_store = MemgraphPropertyGraphStore(
                 username="",# Enter your Memgraph username (default "")
                 password="",# Enter your Memgraph password (default "")

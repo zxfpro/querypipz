@@ -8,7 +8,7 @@ from llama_index.core import (
     PropertyGraphIndex,
     Document,
 )
-from .abc_ import QueryerABC
+from querypipz.abc_ import QueryerABC
 
 @contextmanager
 def safe_operation(info:str):

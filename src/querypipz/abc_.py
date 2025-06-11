@@ -23,7 +23,7 @@ class QueryerABC(ABC):
         self.query_pipeline = None
         self.retriever = None
         self.index: Optional[VectorStoreIndex] = None
-        
+
 
     @abstractmethod
     def build(self):
@@ -39,7 +39,7 @@ class QueryerABC(ABC):
     def reload(self):
         """ reload a exist RAG query"""
         raise NotImplementedError
-    
+
     @abstractmethod
     def update(self, prompt: str):
         """Update the index"""
@@ -90,7 +90,7 @@ class QueryBuilder(ABC):
     def build_ingestion_pipeline(self):
         """Build ingestion pipeline"""
         raise NotImplementedError
-    
+
     @abstractmethod
     def build_kg_extractors(self):
         """Build knowledge graph extractors"""
@@ -120,11 +120,8 @@ class QueryBuilder(ABC):
     def build_tools(self):
         """Build tools"""
         raise NotImplementedError
-    
+
     @abstractmethod
     def get_queryer(self):
         """Get the built queryer"""
         raise NotImplementedError
-
-
-

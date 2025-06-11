@@ -7,7 +7,7 @@ from llama_index.core import Document
 from llama_index.readers.database import DatabaseReader
 import yaml
 import PyPDF2
-
+import pandas as pd
 
 
 def get_data_from_md(text):
@@ -119,6 +119,34 @@ class SimplesReader(BaseReader):
                                       },
                            )
         return [document]
+
+class TransactionCSVReader(BaseReader):
+    """读取CSV
+
+    Args:
+        BaseReader (_type_): _description_
+    """
+    def load_data(self, file_path: str):
+        margin = pd.read_csv(file_path)
+        documents = []
+        for i in margin.groupby('hash.1'):
+            documents.append(Document(text = str(i[1].iloc[0].to_dict()),
+                                      metadata={'transaction':i[0]}))
+        return documents
+
+class BlockCSVReader(BaseReader):
+    """_summary_
+
+    Args:
+        BaseReader (_type_): _description_
+    """
+    def load_data(self, file_path: str):
+        margin = pd.read_csv(file_path)
+        documents = []
+        for i in margin.groupby('hash'):
+            documents.append(Document(text = str(i[1].to_dict()),metadata={'block':i[0]}))
+        return documents
+
 
 
 class ReaderType(Enum):
