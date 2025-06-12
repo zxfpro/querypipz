@@ -8,6 +8,7 @@ from llama_index.core import (
     PropertyGraphIndex,
     Document,
 )
+from llama_index.core import SimpleKeywordTableIndex
 from querypipz.abc_ import QueryerABC
 
 @contextmanager
@@ -66,34 +67,85 @@ class Queryer(QueryerABC):
                     nodes = self.ingestion_pipeline.run(documents=documents_chunk,
                                                         show_progress = True)
 
+
             with safe_operation("Index"):
-                if nodes:
-                    if self.index_type == "VectorStoreIndex":
-                        self.index = VectorStoreIndex(nodes,storage_context = self.storage_context)
-                    elif self.index_type == "PropertyGraphIndex":
-                        print('vvvvv')
-                        self.index = PropertyGraphIndex(nodes,
+                if self.index_type == "VectorStoreIndex":
+                    if nodes:
+                        self.index = VectorStoreIndex(
+                                    nodes,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                                        )
+                    else:
+                        self.index = VectorStoreIndex.from_documents(
+                                    documents_chunk,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                        )
+                elif self.index_type == "PropertyGraphIndex":
+                    if nodes:
+                        self.index = PropertyGraphIndex(
+                                    nodes,
                                     kg_extractors = self.kg_extractors,
                                     storage_context = self.storage_context,
                                     show_progress=True,
                                                         )
-
-                else:
-                    if self.index_type == "VectorStoreIndex":
-                        self.index = VectorStoreIndex.from_documents(
-                                            documents=documents_chunk,
-                                            show_progress=True,
-                                            storage_context = self.storage_context
-                        )
-
-                    elif self.index_type == "PropertyGraphIndex":
+                    else:
                         self.index = PropertyGraphIndex.from_documents(
-                                                    documents=documents_chunk,
-                                                    show_progress=True,
-                                                    kg_extractors = self.kg_extractors,
-                                                    storage_context = self.storage_context,
-                                                    # embed_kg_nodes = False,
-                                                    )
+                                    documents_chunk,
+                                    kg_extractors = self.kg_extractors,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                    # embed_kg_nodes = False,
+                                    )
+                elif self.index_type == "SimpleKeywordTableIndex":
+                    if nodes:
+                        self.index = SimpleKeywordTableIndex(
+                                    nodes,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                                        )
+                    else:
+                        self.index = SimpleKeywordTableIndex.from_documents(
+                                    documents_chunk,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                    )
+
+            # with safe_operation("Index"):
+            #     if nodes:
+            #         if self.index_type == "VectorStoreIndex":
+            #             self.index = VectorStoreIndex(
+            #                         nodes,
+            #                         storage_context = self.storage_context,
+            #                         show_progress=True,
+            #                                             )
+
+
+            #         elif self.index_type == "PropertyGraphIndex":
+            #             self.index = PropertyGraphIndex(
+            #                         nodes,
+            #                         kg_extractors = self.kg_extractors,
+            #                         storage_context = self.storage_context,
+            #                         show_progress=True,
+            #                                             )
+
+            #     else:
+            #         if self.index_type == "VectorStoreIndex":
+            #             self.index = VectorStoreIndex.from_documents(
+            #                                 documents=documents_chunk,
+            #                                 storage_context = self.storage_context,
+            #                                 show_progress=True,
+            #             )
+
+            #         elif self.index_type == "PropertyGraphIndex":
+            #             self.index = PropertyGraphIndex.from_documents(
+            #                                         documents=documents_chunk,
+            #                                         kg_extractors = self.kg_extractors,
+            #                                         storage_context = self.storage_context,
+            #                                         show_progress=True,
+            #                                         # embed_kg_nodes = False,
+            #                                         )
 
             with safe_operation("Storage"):
                 self.index.storage_context.persist(self.persist_path)
@@ -153,7 +205,7 @@ class Queryer(QueryerABC):
                                                     )
             return self.retriever
         else:
-            self.retriever = "制作retriever notes"
+            self.retriever = self.retriever_nest(index = self.index)
             return self.retriever
 
     def _get_query_engine(self, similarity_top_k: int = 3):

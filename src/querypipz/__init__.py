@@ -15,3 +15,6 @@ Settings.llm = OpenAI(model="gpt-4o",api_base=api_base,api_key=api_key)
 
 from querypipz.director import Director
 from querypipz.builder import BuilderFactory, BuilderType
+
+# 自定义的retriver 和query engine 要拆出来了
+

@@ -43,6 +43,8 @@ from llama_index.core.query_engine.custom import CustomQueryEngine
 #             response_obj = self.response_synthesizer.synthesize(response.text, nodes)
 #             return Response(response=response.text,source_nodes=nodes) # TODO 增加metadata
 
+from llama_index.core.query_engine import RetrieverQueryEngine
+
 
 
 
@@ -52,14 +54,20 @@ class QueryType(Enum):
     # 添加更多选项
 
 class QueryPipeline:
-    def __new__(cls, type: QueryType) -> Any:
+    def __new__(cls, type: QueryType,custom_retriever) -> Any:
         assert type.value in [i.value for i in QueryType]
         instance = None
 
         if type.value == 'Simple':
 
+            from llama_index.core import get_response_synthesizer
+            response_synthesizer = get_response_synthesizer()
             # instance = SomeClass(param1=value1, param2=value2)
-            pass
+            instance = RetrieverQueryEngine(
+                retriever=custom_retriever,
+                response_synthesizer=response_synthesizer,
+            )
+
 
         elif type.value == 'Simple2':
 
@@ -72,7 +80,7 @@ class QueryPipeline:
             # )
 
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
         return instance
 

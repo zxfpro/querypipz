@@ -13,7 +13,8 @@ from .builderlib import (DeDaoJYRK2Builder,
                          Test2GraphBuilder,
                          Test3GraphBuilder,
                          Test4GraphBuilder,
-                         Test5GraphBuilder)
+                         Test5GraphBuilder,
+                         Test6GraphBuilder)
 
 class BuilderType(Enum):
     """构造者清单
@@ -31,6 +32,7 @@ class BuilderType(Enum):
     TEST_GRAPH_BUILDER3 = "Test3GraphBuilder"
     TEST_GRAPH_BUILDER4 = "Test4GraphBuilder"
     TEST_GRAPH_BUILDER5 = "Test5GraphBuilder"
+    TEST_GRAPH_BUILDER6 = "Test6GraphBuilder"
     
     HISTORY_MEMORY_BUILDER = "HistoryMemoryBuilder"
     HISTORY_MEMORY_BUILDER2 = "HistoryMemory2Builder"
@@ -57,6 +59,7 @@ class BuilderFactory:
         BuilderType.TEST_GRAPH_BUILDER3: Test3GraphBuilder,
         BuilderType.TEST_GRAPH_BUILDER4: Test4GraphBuilder,
         BuilderType.TEST_GRAPH_BUILDER5: Test5GraphBuilder,
+        BuilderType.TEST_GRAPH_BUILDER6: Test6GraphBuilder,
         BuilderType.HISTORY_MEMORY_BUILDER: HistoryMemoryBuilder,
         BuilderType.HISTORY_MEMORY_BUILDER2: HistoryMemory2Builder,
     }
