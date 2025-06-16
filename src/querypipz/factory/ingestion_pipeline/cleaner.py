@@ -6,6 +6,8 @@ from promptlibz import Templates,TemplateType
 from llama_index.core.schema import TransformComponent
 from llmada import BianXieAdapter
 from llama_index.core import Document
+# from llama_index.core.node_parser import SimpleNodeParser
+
 class DeDaoCleaner(TransformComponent):
     """专为得到设计的清理类
 
@@ -74,9 +76,9 @@ class ExtractConceptCleaner(TransformComponent):
             for memory in memorys:
                 memr.append(Document(text = self._extract_concept(memory),metadata = {"docs":memory}))
             memr2.extend(memr)
-            
+
         return memr2
-    
+
     def _extract_concept(self,text: str)->str:
         """从文本中提取python代码
 
@@ -103,11 +105,97 @@ class ExtractConceptCleaner(TransformComponent):
         matches = re.findall(pattern, text)
         return matches
 
+class ExtractEvent1Cleaner(TransformComponent):
+    """专为得到设计的清理类
+
+    Args:
+        TransformComponent (_type_): _description_
+    """
+    def __call__(self, nodes, **kwargs):
+
+        prompt = """
+**优化的提示词模板：**
+
+```memory
+<Concept: <The name of the specific personal concept, e.g., 黄英杰>>
+
+---
+<Description: <A description of the event .>>
+
+```
+
+**优化思考：**
+
+1.  **聚焦个人差异性概念：** 明确指示只提取“有别于常识的个人差异性概念”，这自然会将重点放在人物（及其独特的经历和关系）和特定地点上，排除普遍性概念。
+2.  **信息汇集：** 模板通过 `<Concept>`, `<Description>`, 两个部分，Concept 重点强调事件,即概念与概念间发生的关系,多以简单句为多, Description则是对发生事件的描述 。
+3.  **对话提取：** 提示词任务本身就是基于对话进行的提取，因此模板是为从对话中提取信息而设计的。
+4.  **特定格式：** 模板严格遵循了要求的输出格式。
+
+{chat_history}
+"""
+        bx = BianXieAdapter()
+        memr2 = []
+        for node in nodes:
+            result = bx.product(prompt.format(chat_history = node.text))
+            memorys = self._extract_n_memory(result)
+            memr = []
+            for memory in memorys:
+                memr.append(Document(text = self._extract_concept(memory),metadata = {"docs":memory}))
+            memr2.extend(memr)
+
+        return memr2
+
+    def _extract_concept(self,text: str)->str:
+        """从文本中提取python代码
+
+        Args:
+            text (str): 输入的文本。
+
+        Returns:
+            str: 提取出的python文本
+        """
+        pattern = r'<Concept: ([\s\S]*?)>'
+        matches = re.findall(pattern, text)
+        return matches[0]
+
+    def _extract_n_memory(self,text: str)->str:
+        """从文本中提取python代码
+
+        Args:
+            text (str): 输入的文本。
+
+        Returns:
+            str: 提取出的python文本
+        """
+        pattern = r'```memory([\s\S]*?)```'
+        matches = re.findall(pattern, text)
+        return matches
+
+
+
+
+class ExcludedEmbedMetadataCleaner(TransformComponent):
+    """专为得到设计的清理类
+
+    Args:
+        TransformComponent (_type_): _description_
+    """
+    def __call__(self, nodes, **kwargs):
+        for node in nodes:
+            # 这样设置确保只有text被用于embedding
+            node.excluded_embed_metadata_keys = list(node.metadata.keys())
+            # node.excluded_llm_metadata_keys
+        return nodes
+    
+
+
 class CleanerType(Enum):
     """types
     """
     DE_DAO_CLEANER = 'DeDaoCleaner'
     EXTRACT_CONCEPT_CLEARER = "ExtractConceptCleaner"
+    EXCLUDED_EMBED_METADATA_CLEARER = "ExcludedEmbedMetadataCleaner"
+    ExtractEvent1Cleaner = "ExtractEvent1Cleaner"
     # 添加更多选项
 
 class Cleaner:
@@ -128,6 +216,11 @@ class Cleaner:
         elif key_name == 'ExtractConceptCleaner':
             instance = ExtractConceptCleaner()
 
+        elif key_name == 'ExcludedEmbedMetadataCleaner':
+            instance = ExcludedEmbedMetadataCleaner()
+
+        elif key_name == "ExtractEvent1Cleaner":
+            instance = ExtractEvent1Cleaner()
         else:
             raise TypeError('Unknown type')
 

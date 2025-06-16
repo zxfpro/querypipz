@@ -21,8 +21,11 @@ class Director:
         self.builder.build_kg_extractors() # extractor transformers
         self.builder.build_storage_context()
         self.builder.build_index()
-        self.builder.build_retriver()
-        self.builder.build_query_pipeline()
-        self.builder.build_tools()
 
-        return self.builder.get_queryer()
+        self.builder.build_retriver_nest()
+        self.builder.build_query_pipeline()
+
+        self.builder.build_tools()
+        queryer = self.builder.get_queryer()
+
+        return queryer

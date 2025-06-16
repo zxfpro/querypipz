@@ -17,4 +17,3 @@ from querypipz.director import Director
 from querypipz.builder import BuilderFactory, BuilderType
 
 # 自定义的retriver 和query engine 要拆出来了
-

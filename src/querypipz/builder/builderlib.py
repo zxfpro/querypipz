@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from llama_index.llms.openai import OpenAI
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core import Settings, Document
-
 from llama_index.core import StorageContext,SimpleDirectoryReader
 
 from querypipz.abc_ import QueryBuilder
@@ -38,9 +37,9 @@ load_dotenv()
 api_key = os.getenv("BIANXIE_API_KEY")
 api_base = os.getenv("BIANXIE_BASE")
 
-class BaseQueryBuilder():
+class BaseQueryBuilder(QueryBuilder):
     """ base """
-    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/date'): # 这里设定知识库的本地存储位置
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/Base'): # 这里设定知识库的本地存储位置
         self.query = Queryer() # 固定
         self.query.persist_path = persist_path # 固定
 
@@ -58,6 +57,7 @@ class BaseQueryBuilder():
                 file_extractor = {".md": Reader(ReaderType.CUS_OBSIDIAN_READER)},
                 recursive=True,
             )
+
     def build_ingestion_pipeline(self):
         """_summary_
         """
@@ -89,6 +89,14 @@ class BaseQueryBuilder():
         """
         self.query.index_type = "VectorStoreIndex"
 
+    def get_queryer(self):# 默认
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
+        return self.query
+
     def build_retriver(self):
         """_summary_
         """
@@ -99,7 +107,6 @@ class BaseQueryBuilder():
         """ build """
         self.query.query_engine = None
 
-
     def build_tools(self): # 增加一些特异性的函数, 使用以下方法进行添加
         """_summary_
         """
@@ -109,13 +116,6 @@ class BaseQueryBuilder():
         types.ModuleType(dynamic_method,self.query)
         # self.query.tools2 = ...
 
-    def get_queryer(self):# 默认
-        """_summary_
-
-        Returns:
-            _type_: _description_
-        """
-        return self.query
 
 
 
@@ -594,9 +594,8 @@ class Test4GraphBuilder(QueryBuilder):
         self.query.index_type = "PropertyGraphIndex"
 
 
-    def build_retriver(self):
+    def build_retriver_nest(self):
         self.query.retriever_nest = None
-
 
     def build_query_pipeline(self):
         self.query.query_engine = None
@@ -611,8 +610,8 @@ class Test4GraphBuilder(QueryBuilder):
         def dynamic_method(self, name_path:str):
             return self.index.property_graph_store.save_networkx_graph(name=name_path) # for debug
 
-        types.ModuleType(dynamic_method,self.query)
-        # self.query.tools = dynamic_method.__get__(self.query,Queryer)
+        # types.ModuleType(dynamic_method,self.query)
+        self.query.tools = dynamic_method.__get__(self.query,Queryer)
 
 
 class Test5GraphBuilder(QueryBuilder):
@@ -696,16 +695,62 @@ class Test6GraphBuilder(QueryBuilder):
         self.query.index_type = "SimpleKeywordTableIndex"
 
 
-    def build_retriver(self):
-        from llama_index.core import VectorStoreIndex
 
-        documents = [self.query.index.docstore.get_document(i) for i in list(self.query.index.docstore.docs.keys())]
-        title_index = VectorStoreIndex.from_documents([Document(text = doc.text) for doc in documents])
-        # title_retriver = title_index.as_retriever()
+    def build_retriver_nest(self):
+        self.query.retriever_nest = Retriver(RetriverType.CustomRetriever2)
 
-        retrs = Retriver(RetriverType.CustomRetriever2)
 
-        self.query.retriever_nest = retrs
+    def build_query_pipeline(self):
+        self.query.query_engine = None
+
+    def get_queryer(self):
+        return self.query
+
+    def build_kg_extractors(self):
+        self.query.kg_extractors = None
+
+    def build_tools(self):
+        def dynamic_method(self, name_path:str):
+            return self.index.property_graph_store.save_networkx_graph(name=name_path) # for debug
+
+        # types.ModuleType(dynamic_method,self.query)
+        self.query.tools = dynamic_method.__get__(self.query,Queryer)
+
+
+
+class Test7GraphBuilder(QueryBuilder):
+    """# AAAA
+    Args:
+        QueryBuilder (_type_): _description_
+    """
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/TestGraph6'):
+        self.query = Queryer()
+        self.query.persist_path = persist_path
+
+    def set_llm(self):
+        Settings.llm = OpenAI(model="gpt-4.1-mini-2025-04-14",api_base=api_base,api_key=api_key)
+
+    def build_reader(self):
+        self.query.reader = None
+
+    def build_ingestion_pipeline(self):
+        self.query.ingestion_pipeline = IngestionPipeline(
+            transformations=[
+                Cleaner(CleanerType.EXTRACT_CONCEPT_CLEARER),
+                Cleaner(CleanerType.EXCLUDED_EMBED_METADATA_CLEARER)
+                ]
+            )
+        
+    def build_storage_context(self):
+        self.query.storage_context = None
+
+    def build_index(self):
+        self.query.index_type = "VectorStoreIndex"
+
+
+
+    def build_retriver_nest(self):
+        self.query.retriever_nest = None #Retriver(RetriverType.CustomRetriever2)
 
 
     def build_query_pipeline(self):

@@ -62,6 +62,78 @@ class MyGraphExtractor(TransformComponent):
     # async def acall(self, llama_nodes: list[BaseNode], **kwargs) -> list[BaseNode]:
     #    ...
 
+from llama_index.core.indices.property_graph.utils import (
+    default_parse_triplets_fn,
+)
+from llama_index.core.llms.llm import LLM
+
+from llama_index.core.prompts.default_prompts import (
+    DEFAULT_KG_TRIPLET_EXTRACT_PROMPT,
+)
+
+import asyncio
+from typing import Any, Callable, Optional, Sequence, Union
+
+from llama_index.core.async_utils import run_jobs
+from llama_index.core.indices.property_graph.utils import (
+    default_parse_triplets_fn,
+)
+from llama_index.core.graph_stores.types import (
+    EntityNode,
+    Relation,
+    KG_NODES_KEY,
+    KG_RELATIONS_KEY,
+)
+from llama_index.core.llms.llm import LLM
+from llama_index.core.prompts import PromptTemplate
+from llama_index.core.prompts.default_prompts import (
+    DEFAULT_KG_TRIPLET_EXTRACT_PROMPT,
+)
+from llama_index.core.schema import TransformComponent, BaseNode, MetadataMode
+
+
+class MyGraphExtractor2(SimpleLLMPathExtractor):
+
+    async def _aextract(self, node: BaseNode) -> BaseNode:
+        """Extract triples from a node."""
+        assert hasattr(node, "text")
+
+        text = node.get_content(metadata_mode=MetadataMode.LLM)
+
+        
+        try:
+            llm_response = await self.llm.apredict(
+                self.extract_prompt,
+                text=text,
+                max_knowledge_triplets=self.max_paths_per_chunk,
+            )
+            triples = self.parse_fn(llm_response)
+        except ValueError:
+            triples = []
+
+        existing_nodes = node.metadata.pop(KG_NODES_KEY, [])
+        existing_relations = node.metadata.pop(KG_RELATIONS_KEY, [])
+
+        metadata = node.metadata.copy()
+        metadata['type'] = 'concept'
+        for subj, rel, obj in triples:
+            subj_node = EntityNode(name=subj, properties=metadata)
+            obj_node = EntityNode(name=obj, properties=metadata)
+            rel_node = Relation(
+                label=rel,
+                source_id=subj_node.id,
+                target_id=obj_node.id,
+                properties=metadata,
+            )
+
+            existing_nodes.extend([subj_node, obj_node])
+            existing_relations.append(rel_node)
+
+        node.metadata[KG_NODES_KEY] = existing_nodes
+        node.metadata[KG_RELATIONS_KEY] = existing_relations
+
+        return node
+
 
 
 class GraphExtractorType(Enum):
@@ -102,8 +174,12 @@ class GraphExtractor:
         elif key_name == 'SimpleLLMPathExtractor':
             instance = SimpleLLMPathExtractor()
         elif key_name == 'ImplicitPathExtractor':
-            instance = ImplicitPathExtractor()
+            # 是通过将定义的Node Relations 的对象可以转化为 metadata 的nodes and edges 如果没有定义则跳过
+            instance = ImplicitPathExtractor() 
 
+        elif key_name == 'ImplicitPathExtractor2':
+            # 是通过将定义的Node Relations 的对象可以转化为 metadata 的nodes and edges 如果没有定义则跳过
+            instance = ImplicitPathExtractor2() 
         elif key_name == 'DynamicLLMPathExtractor':
             instance = DynamicLLMPathExtractor(
                         max_triplets_per_chunk=20,

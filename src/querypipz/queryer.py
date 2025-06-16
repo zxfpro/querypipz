@@ -41,28 +41,44 @@ class Queryer(QueryerABC):
         self.index = None
 
     def build(self,cover = False):
+        # 初始化文件夹/文件
         if os.path.exists(self.persist_path) and cover is False:
             return 'index exists, you can build force with cover set True'
 
-        if self.reader is None:
-            # raise ValueError("Reader is not set. Call build_reader first.")
-            if self.index_type == "VectorStoreIndex":
-                self.index = VectorStoreIndex.from_documents([Document(text='start')],
-                                                             storage_context=self.storage_context)
-                self.index.storage_context.persist(self.persist_path)
-                return 'builded'
-            else:
-                raise ValueError("Reader is not set. Call build_reader first.")
-
+        # 初始化Reader
         with safe_operation("Reader"):
-            documents = self.reader.load_data(show_progress = True)
+            if self.reader is None :
+                documents = []
+            else:
+                documents = self.reader.load_data(show_progress = True)
+
+        """_summary_
+      # # 初始化index
+        # if self.reader is None:
+        #     # raise ValueError("Reader is not set. Call build_reader first.")
+        #     if self.index_type == "VectorStoreIndex":
+        #         self.index = VectorStoreIndex.from_documents([],
+        #                                                      storage_context=self.storage_context)
+        #         self.index.storage_context.persist(self.persist_path)
+        #         return 'builded'
+        #     elif self.index_type == "SimpleKeywordTableIndex":
+        #         self.index = SimpleKeywordTableIndex.from_documents([],
+        #                                                      storage_context=self.storage_context)
+        #         self.index.storage_context.persist(self.persist_path)
+        #         return 'builded'
+        #     else:
+        #         raise ValueError("Reader is not set. Call build_reader first.")
+
+        """
+
         chunk_size = 10
-        for i in range(len(documents)// chunk_size+1):
-            print(f'chunk: {i}')
+        for i in range(len(documents)// chunk_size + 1):
             documents_chunk = documents[i*chunk_size:(i+1)*chunk_size]
-            print(documents_chunk,'documents_chunk')
+            nodes = None
+            print(f'chunk: {i}')
+            print(documents_chunk,'documents_chunk')#  [] or [Document , Document]
+
             with safe_operation("Ingestion"):
-                nodes = None
                 if self.ingestion_pipeline:
                     nodes = self.ingestion_pipeline.run(documents=documents_chunk,
                                                         show_progress = True)
@@ -82,6 +98,19 @@ class Queryer(QueryerABC):
                                     storage_context = self.storage_context,
                                     show_progress=True,
                         )
+                elif self.index_type == "SimpleKeywordTableIndex":
+                    if nodes:
+                        self.index = SimpleKeywordTableIndex(
+                                    nodes,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                                        )
+                    else:
+                        self.index = SimpleKeywordTableIndex.from_documents(
+                                    documents_chunk,
+                                    storage_context = self.storage_context,
+                                    show_progress=True,
+                                    )
                 elif self.index_type == "PropertyGraphIndex":
                     if nodes:
                         self.index = PropertyGraphIndex(
@@ -96,21 +125,8 @@ class Queryer(QueryerABC):
                                     kg_extractors = self.kg_extractors,
                                     storage_context = self.storage_context,
                                     show_progress=True,
-                                    # embed_kg_nodes = False,
                                     )
-                elif self.index_type == "SimpleKeywordTableIndex":
-                    if nodes:
-                        self.index = SimpleKeywordTableIndex(
-                                    nodes,
-                                    storage_context = self.storage_context,
-                                    show_progress=True,
-                                                        )
-                    else:
-                        self.index = SimpleKeywordTableIndex.from_documents(
-                                    documents_chunk,
-                                    storage_context = self.storage_context,
-                                    show_progress=True,
-                                    )
+
 
             # with safe_operation("Index"):
             #     if nodes:
@@ -205,7 +221,10 @@ class Queryer(QueryerABC):
                                                     )
             return self.retriever
         else:
-            self.retriever = self.retriever_nest(index = self.index)
+            storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
+            self.index = load_index_from_storage(storage_context=storage_context)
+            self.retriever_nest.complex_build(index = self.index)
+            self.retriever = self.retriever_nest
             return self.retriever
 
     def _get_query_engine(self, similarity_top_k: int = 3):

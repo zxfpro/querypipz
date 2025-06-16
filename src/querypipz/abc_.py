@@ -76,6 +76,10 @@ class QueryBuilder(ABC):
         NotImplementedError: _description_
         NotImplementedError: _description_
     """
+    def __init__(self): # 这里设定知识库的本地存储位置
+        self.query : QueryerABC = None
+        self.query.persist_path : str = ''
+
     @abstractmethod
     def set_llm(self):
         """Set the language model"""
@@ -107,7 +111,7 @@ class QueryBuilder(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_retriver(self):
+    def build_retriver_nest(self):
         """Build retriever"""
         raise NotImplementedError
 

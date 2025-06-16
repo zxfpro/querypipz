@@ -23,6 +23,8 @@ from llama_index.core.retrievers import (
     KeywordTableSimpleRetriever,
 )
 
+from llama_index.core import VectorStoreIndex
+from llama_index.core import Document
 
 
 class CustomRetriever(BaseRetriever):
@@ -69,27 +71,35 @@ class CustomRetriever2(BaseRetriever):
 
     def __init__(
         self,
-        index,
-        vector_retriever: VectorIndexRetriever,
-        keyword_retriever: KeywordTableSimpleRetriever,
+        # vector_retriever: VectorIndexRetriever,
+        # keyword_retriever: KeywordTableSimpleRetriever,
     ) -> None:
         """Init params."""
-        vector_retriever = index
-        self._vector_retriever = vector_retriever
-        self._keyword_retriever = keyword_retriever
+        self.index = None
+        self.title_retriver = None
+        self.key_retriver = None
         super().__init__()
+
+    def complex_build(self,index):
+        self.index = index
+        documents = [self.index.docstore.get_document(i) for i in list(self.index.docstore.docs.keys())]
+        title_index = VectorStoreIndex.from_documents([Document(text = doc.text) for doc in documents])
+        self.key_retriver = self.index.as_retriever()
+        self.title_retriver = title_index.as_retriever()
+        
 
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         """Retrieve nodes given query."""
 
         retrieve_nodes = []
-        title = self._keyword_retriever.retrieve(query_bundle)
-        for title_i in title:
+        titles = self.title_retriver.retrieve(query_bundle)
+        for title_i in titles:
             print(title_i)
-            context = self._vector_retriever.retrieve(title_i.text)
+            print(type(title_i))
+            print(title_i.text,type(title_i.text))
+            context = self.key_retriver.retrieve(title_i.text)
             retrieve_nodes.append(context)
         return retrieve_nodes
-
 
 
 
@@ -153,7 +163,7 @@ class Retriver:
             )
         elif key_name == "CustomRetriever2":
 
-            instance = CustomRetriever2
+            instance = CustomRetriever2()
 
         else:
             raise TypeError('Unknown type')

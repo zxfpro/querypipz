@@ -12,6 +12,65 @@ from llama_index.core.schema import BaseNode
 
 from pydantic import ConfigDict
 
+class TagExtractor(BaseExtractor):
+    """自定义关键词提取器"""
+    model_config = ConfigDict(extra='allow')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+    async def aextract(self, nodes: Sequence[BaseNode]) -> List[Dict[str, Any]]:
+        """异步提取方法"""
+        return [self.extract_from_node(node) for node in nodes]
+
+    def extract(self, nodes: Sequence[BaseNode]) -> List[Dict[str, Any]]:
+        """同步提取方法"""
+        return [self.extract_from_node(node) for node in nodes]
+
+    def extract_from_node(self, node: BaseNode) -> Dict[str, Any]:
+        """从单个节点提取信息"""
+        docs = node.metadata.get('docs')
+        print(docs,'text')
+        
+        from llmada import BianXieAdapter
+
+        bx = BianXieAdapter()
+
+        result = bx.product(f"""
+        从下列文本中提取 Tags 并以列表的形式输出
+        {docs}
+
+        输出format:
+        ```list_str
+        ['河北工程大学', '黄英杰', '伙管会社团']
+        ```
+        """)
+        print(result,'result')
+        list_str = self._extract_n_code(result)
+
+        import ast
+        lst = ast.literal_eval(list_str)
+        print(lst,'lst')
+        print(type(lst),'list_type')
+        return {
+            "tags": lst,
+            "vvv": ['aa','bb'],
+        }
+    
+    def _extract_n_code(self,text: str)->str:
+        """从文本中提取python代码
+
+        Args:
+            text (str): 输入的文本。
+
+        Returns:
+            str: 提取出的python文本
+        """
+        pattern = r'```list_str([\s\S]*?)```'
+        matches = re.findall(pattern, text)
+        return matches[0]
+
 class CustomKeywordExtractor(BaseExtractor):
     """自定义关键词提取器"""
     model_config = ConfigDict(extra='allow')
@@ -134,6 +193,7 @@ class ExtractorType(Enum):
     CUSTOM_KEYWORD_EXTRACTOR = "CustomKeywordExtractor"
     DEDAO_JYRK_TITLE_EXTRACTOR = "DeDaoJYRKTitleExtractor"
     HISTORY_MEMORY_KEYWORD_EXTRACTOR = "HistoryMemoryKeywordExtractor"
+    TAG_EXTRACTOR = "TagExtractor"
     # 添加更多选项
 
 class Extractor:
@@ -163,6 +223,9 @@ class Extractor:
 
         elif key_name =="HistoryMemoryKeywordExtractor":
             instance = HistoryMemoryKeywordExtractor()
+
+        elif key_name == "TagExtractor":
+            instance = TagExtractor()
 
         else:
             raise TypeError('Unknown type')
