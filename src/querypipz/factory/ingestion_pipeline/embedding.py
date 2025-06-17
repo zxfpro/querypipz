@@ -25,6 +25,9 @@ class EmbeddingType(Enum):
 
 class Embedding:
     """embedding 方案
+    index._embed_model.get_agg_embedding_from_queries(['朱彦青','cc'])   对一组（或多个）相关的查询字符串生成一个聚合的嵌入向量
+    index._embed_model.get_text_embedding('朱彦青')    对一个字符串进行词向量嵌入
+
     """
     def __new__(cls, emb_type: EmbeddingType | str) -> Any:
         if isinstance(emb_type,EmbeddingType):
