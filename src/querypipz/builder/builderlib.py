@@ -79,7 +79,7 @@ class BaseQueryBuilder(QueryBuilder):
         """
         self.query.storage_context = None
 
-    def build_index(self):
+    def build_index_type(self):
         """_summary_
         """
         self.query.index_type = "VectorStoreIndex"
@@ -128,7 +128,7 @@ class BaseGraphQueryBuilder(BaseQueryBuilder):
                 property_graph_store=GraphStore(GraphStoreType.NEO4J_GRAPH_STORE),
             )
 
-    def build_index(self):
+    def build_index_type(self):
         """_summary_
         """
         self.query.index_type = "PropertyGraphIndex"
@@ -188,7 +188,7 @@ class ChatHistoryMemoryBuilder(BaseQueryBuilder):
             transformations=[
                 Cleaner(CleanerType.ChatHistoryMemoryCleaner),
                 # Extractor(ExtractorType.HISTORY_MEMORY_KEYWORD_EXTRACTOR),
-                Embedding(EmbeddingType.SIMILARITY_TEXT_3L_EMBEDDING),
+                # Embedding(EmbeddingType.SIMILARITY_TEXT_3L_EMBEDDING),
                 ]
             )
 

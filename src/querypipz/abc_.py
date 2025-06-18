@@ -31,18 +31,13 @@ class QueryerABC(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def load(self):
-        """ load a exist RAG query"""
+    def update(self, prompt: str):
+        """Update the index"""
         raise NotImplementedError
 
     @abstractmethod
     def reload(self):
         """ reload a exist RAG query"""
-        raise NotImplementedError
-
-    @abstractmethod
-    def update(self, prompt: str):
-        """Update the index"""
         raise NotImplementedError
 
     @abstractmethod
@@ -106,7 +101,7 @@ class QueryBuilder(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_index(self):
+    def build_index_type(self):
         """Build index"""
         raise NotImplementedError
 

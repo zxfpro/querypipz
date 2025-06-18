@@ -38,11 +38,16 @@ class Queryer(QueryerABC):
         self.retriever_nest = None
         self.query_nest = None
         self.query_pipeline = None
-        
+
         self.retriever = None
         self.index = None
 
-    def build(self,cover = False):
+    def build(self,text:str = None,cover = False):
+        """ frist_build 
+        
+        Args:
+            cover (bool, optional): if you want to cover a exists knowledge base, set True. Defaults to False.
+        """
         # 初始化文件夹/文件
         if os.path.exists(self.persist_path) and cover is False:
             return 'index exists, you can build force with cover set True'
@@ -50,7 +55,12 @@ class Queryer(QueryerABC):
         # 初始化Reader
         with safe_operation("Reader"):
             if self.reader is None :
-                documents = []
+                try:
+                    assert text is not None
+                except AssertionError:
+                    raise AssertionError('if reader is None, must set text parameters')
+                
+                documents = [Document(text = text)]
             else:
                 documents = self.reader.load_data(show_progress = True)
 
@@ -115,29 +125,31 @@ class Queryer(QueryerABC):
 
         return 'builded'
 
-    def load(self):
-        """_summary_
-        """
-        assert 1==1
-        storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
-        self.index = load_index_from_storage(storage_context=storage_context)
 
-    def reload(self):
-        """ reload """
-        self.retriever = None
-
-    def update(self, prompt: str):
+    def update(self,prompt: str):
         if not os.path.exists(self.persist_path):
-            os.makedirs(self.persist_path)
-        else:
-            self.load()
+            return " persist_path is not exist please init it "
+
+        if self.index is None:
+            storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
+            self.index = load_index_from_storage(storage_context=storage_context)
+
         documents = [Document(text = prompt)]
+
         if self.ingestion_pipeline:
             nodes = self.ingestion_pipeline.run(documents=documents,show_progress = True)
             self.index.insert_nodes(nodes)
         else:
             self.index.insert(documents[0])
+
         self.index.storage_context.persist(self.persist_path)
+
+
+    def reload(self):
+        """ reload """
+        self.retriever = None
+        self.index = None
+
 
     def query(self, prompt: str, similarity_top_k: int = 3):
         """
@@ -171,6 +183,7 @@ class Queryer(QueryerABC):
                                                     )
             return self.retriever
         else:
+            # TODO
             storage_context = StorageContext.from_defaults(persist_dir=self.persist_path)
             self.index = load_index_from_storage(storage_context=storage_context)
             self.retriever_nest.complex_build(index = self.index)
@@ -195,4 +208,5 @@ class Queryer(QueryerABC):
                                                         include_text=True,)
             return self.query_pipeline
         else:
+            # TODO
             pass
