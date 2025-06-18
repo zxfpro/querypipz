@@ -123,7 +123,7 @@ class SplitterType(Enum):
 
 class Splitter:
     """ splitter """
-    def __new__(cls, splitter_type: SplitterType | str) -> Any:
+    def __new__(cls, splitter_type: SplitterType | str,chunk_size = None) -> Any:
         assert splitter_type.value in [i.value for i in SplitterType]
 
         if isinstance(splitter_type,SplitterType):
@@ -135,7 +135,7 @@ class Splitter:
         instance = None
 
         if key_name == 'Simple':
-            instance = SentenceSplitter(chunk_size=4096, chunk_overlap=50)
+            instance = SentenceSplitter(chunk_size=chunk_size or 4096, chunk_overlap=50)
 
         elif key_name == "TestSplitter":
             instance = TestSplitter()

@@ -173,6 +173,67 @@ class ExtractEvent1Cleaner(TransformComponent):
 
 
 
+class ChatHistoryMemoryCleaner(TransformComponent):
+    """专为得到设计的清理类
+
+    Args:
+        TransformComponent (_type_): _description_
+    """
+    def __call__(self, nodes, **kwargs):
+        text = nodes[0].text
+        conversation = self._parse_conversation(text)
+        a = [f"user: {conversation_i.get('user')},\nassistant: {conversation_i.get('assistant')}" for conversation_i in conversation]
+        docs = []
+        docs.append(Document(text = a[0],metadata = {'docs':     a[0]+a[1]},excluded_embed_metadata_keys=['docs']))
+        docs.append(Document(text = a[len(a)-1],metadata = {'docs':a[len(a)-2]+a[len(a)-1]},excluded_embed_metadata_keys=['docs']))
+        for i in range(len(a)-2):
+            # print(i,i+1,i+2)
+            docs.append(Document(text = a[i+1],metadata = {'docs':a[i]+a[i+1] + a[i+2]},excluded_embed_metadata_keys=['docs']))
+        return docs
+
+    def _parse_conversation(self,text):
+        # 定义匹配 user 和 assistant 对话的正则表达式
+        # (user|assistant):  匹配 "user:" 或 "assistant:"
+        # ([\s\S]*?)        匹配后面的任意字符（包括换行符），非贪婪模式
+        # (?=\n(user|assistant):|$)  正向先行断言，确保匹配到下一个 "user:" 或 "assistant:"
+        #                              或者字符串的结尾，这样可以正确地分割每个对话块
+        pattern = re.compile(r'(user|assistant):\s*([\s\S]*?)(?=\n(user|assistant):|$)')
+
+        matches = pattern.finditer(text)
+        
+        conversation_list = []
+        current_pair = {}
+
+        for match in matches:
+            speaker = match.group(1)
+            content = match.group(2).strip() # .strip() 去除内容前后可能存在的空白符
+
+            if speaker == "user":
+                # 如果当前已经有 user，说明上一个 pair 已经结束，将上一个 pair 加入列表
+                # （这种情况通常不会发生，因为我们是按顺序处理的，user: 后面是 assistant:）
+                # 但是为了健壮性，可以加上判断
+                if "user" in current_pair:
+                    conversation_list.append(current_pair)
+                    current_pair = {} # 重置
+                current_pair["user"] = content
+            elif speaker == "assistant":
+                # 确保 assistant 前面有对应的 user
+                if "user" in current_pair:
+                    current_pair["assistant"] = content
+                    conversation_list.append(current_pair)
+                    current_pair = {} # 清空，准备下一个对话对
+                else:
+                    # 这种情况下，assistant 出现但前面没有 user，可能数据格式有问题，或者第一个就是 assistant
+                    # 这里可以根据需求选择是忽略还是报错
+                    print(f"Warning: Assistant response found without a preceding user query: '{content}'")
+                    # 如果你想将这种不成对的 assistant 也作为一个独立的条目，可以这样处理：
+                    # conversation_list.append({"assistant": content})
+
+        # 处理最后一个可能不成对的 user (如果文本以 user 结尾)
+        if current_pair and "user" in current_pair and "assistant" not in current_pair:
+            conversation_list.append(current_pair)
+
+        return conversation_list
 
 class ExcludedEmbedMetadataCleaner(TransformComponent):
     """专为得到设计的清理类
@@ -196,6 +257,7 @@ class CleanerType(Enum):
     EXTRACT_CONCEPT_CLEARER = "ExtractConceptCleaner"
     EXCLUDED_EMBED_METADATA_CLEARER = "ExcludedEmbedMetadataCleaner"
     ExtractEvent1Cleaner = "ExtractEvent1Cleaner"
+    ChatHistoryMemoryCleaner = "ChatHistoryMemoryCleaner"
     # 添加更多选项
 
 class Cleaner:
@@ -213,14 +275,19 @@ class Cleaner:
         if key_name == 'DeDaoCleaner':
             instance = DeDaoCleaner()
 
-        elif key_name == 'ExtractConceptCleaner':
-            instance = ExtractConceptCleaner()
-
-        elif key_name == 'ExcludedEmbedMetadataCleaner':
+        elif key_name == 'ExcludedEmbedMetadataCleaner': # running
             instance = ExcludedEmbedMetadataCleaner()
+
+        elif key_name == "ChatHistoryMemoryCleaner": # running
+            instance = ChatHistoryMemoryCleaner()
+
+        elif key_name == 'ExtractConceptCleaner': # running
+            instance = ExtractConceptCleaner()
 
         elif key_name == "ExtractEvent1Cleaner":
             instance = ExtractEvent1Cleaner()
+
+
         else:
             raise TypeError('Unknown type')
 

@@ -9,11 +9,14 @@ load_dotenv()
 api_key = os.getenv("BIANXIE_API_KEY")
 api_base = os.getenv("BIANXIE_BASE")
 
-Settings.embed_model = OpenAIEmbedding(model_name="text-embedding-3-small",
-                                       api_key=api_key,api_base =api_base)
 Settings.llm = OpenAI(model="gpt-4o",api_base=api_base,api_key=api_key)
+Settings.embed_model = OpenAIEmbedding(model_name="text-embedding-3-small",api_key=api_key,api_base =api_base)
+
+# Settings.chunk_size = 20000
 
 from querypipz.director import Director
 from querypipz.builder import BuilderFactory, BuilderType
 
-# 自定义的retriver 和query engine 要拆出来了
+
+from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
+from llama_index.core.schema import TextNode

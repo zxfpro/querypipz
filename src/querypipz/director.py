@@ -9,14 +9,14 @@ class Director:
     def __init__(self, builder:QueryBuilder):
         self.builder = builder
 
-    def construct(self):
+    def construct(self,file_path:str = None):
         """开始建造
 
         Returns:
             返回queryer: 建造成功的产品
         """
         self.builder.set_llm()
-        self.builder.build_reader() # data loader
+        self.builder.build_reader(file_path) # data loader
         self.builder.build_ingestion_pipeline()
         self.builder.build_kg_extractors() # extractor transformers
         self.builder.build_storage_context()

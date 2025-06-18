@@ -1,21 +1,13 @@
 """ builder """
 from enum import Enum
 from typing import Any
-from .builderlib import (DeDaoJYRK2Builder,
-                         DeDaoJYRK6Builder,
-                         HistoryMemoryBuilder,
-                         HistoryMemory2Builder,
-                         BaseQueryBuilder,
-                         ObsidianDateBuilder,
-                         ObsidianHabitBuilder,
-                         DeDaoJYRKBuilder,
-                         TestGraphBuilder,
-                         Test2GraphBuilder,
-                         Test3GraphBuilder,
-                         Test4GraphBuilder,
-                         Test5GraphBuilder,
-                         Test6GraphBuilder,
-                         Test7GraphBuilder)
+from .builderlib import (
+    SZRSGraphMemoryBuilder,
+    ChatHistoryMemoryBuilder,
+    JYRKArticleBuilder,
+    ObsidianBuilder
+)
+
 
 class BuilderType(Enum):
     """构造者清单
@@ -23,22 +15,10 @@ class BuilderType(Enum):
     Args:
         Enum (_type_): 选择构造者
     """
-    OBSIDIAN_DATE_BUILDER = 'ObsidianDateBuilder'
-    OBSIDIAN_HABIT_BUILDER = "ObsidianHabitBuilder"
-    DEDAO_JYRK_BUILDER = "DeDaoJYRKBuilder"
-    DEDAO_JYRK_BUILDER2 = "DeDaoJYRK2Builder"
-    DEDAO_JYRK_BUILDER6 = "DeDaoJYRK6Builder"
-    TEST_GRAPH_BUILDER = "TestGraphBuilder"
-    TEST_GRAPH_BUILDER2 = "Test2GraphBuilder"
-    TEST_GRAPH_BUILDER3 = "Test3GraphBuilder"
-    TEST_GRAPH_BUILDER4 = "Test4GraphBuilder"
-    TEST_GRAPH_BUILDER5 = "Test5GraphBuilder"
-    TEST_GRAPH_BUILDER6 = "Test6GraphBuilder"
-    TEST_GRAPH_BUILDER7 = "Test7GraphBuilder"
-    
-    HISTORY_MEMORY_BUILDER = "HistoryMemoryBuilder"
-    HISTORY_MEMORY_BUILDER2 = "HistoryMemory2Builder"
-    SIMPLE = 'simple'
+    SZRS_GRAPH_MEMORY_BUILDER = 'SZRSGraphMemoryBuilder'
+    CHAT_HISTORY_MEMORY_BUILDER = "ChatHistoryMemoryBuilder"
+    JYRK_ARTICLE_BUILDER = "JYRKArticleBuilder"
+    OBSIDIAN_BUILDER = "ObsidianBuilder"
     # 添加更多选项
 
 class BuilderFactory:
@@ -51,20 +31,10 @@ class BuilderFactory:
         builder: 构造者
     """
     _builders = {
-        BuilderType.OBSIDIAN_DATE_BUILDER: ObsidianDateBuilder,
-        BuilderType.OBSIDIAN_HABIT_BUILDER: ObsidianHabitBuilder,
-        BuilderType.DEDAO_JYRK_BUILDER: DeDaoJYRKBuilder,
-        BuilderType.DEDAO_JYRK_BUILDER2: DeDaoJYRK2Builder,
-        BuilderType.DEDAO_JYRK_BUILDER6: DeDaoJYRK6Builder,
-        BuilderType.TEST_GRAPH_BUILDER: TestGraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER2: Test2GraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER3: Test3GraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER4: Test4GraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER5: Test5GraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER6: Test6GraphBuilder,
-        BuilderType.TEST_GRAPH_BUILDER7: Test7GraphBuilder,
-        BuilderType.HISTORY_MEMORY_BUILDER: HistoryMemoryBuilder,
-        BuilderType.HISTORY_MEMORY_BUILDER2: HistoryMemory2Builder,
+        BuilderType.SZRS_GRAPH_MEMORY_BUILDER: SZRSGraphMemoryBuilder,
+        BuilderType.CHAT_HISTORY_MEMORY_BUILDER: ChatHistoryMemoryBuilder,
+        BuilderType.JYRK_ARTICLE_BUILDER: JYRKArticleBuilder,
+        BuilderType.OBSIDIAN_BUILDER: ObsidianBuilder,
     }
 
     def __new__(cls, builder_type: BuilderType,persist_path=None) -> Any:

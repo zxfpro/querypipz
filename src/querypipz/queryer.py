@@ -52,25 +52,6 @@ class Queryer(QueryerABC):
             else:
                 documents = self.reader.load_data(show_progress = True)
 
-        """_summary_
-      # # 初始化index
-        # if self.reader is None:
-        #     # raise ValueError("Reader is not set. Call build_reader first.")
-        #     if self.index_type == "VectorStoreIndex":
-        #         self.index = VectorStoreIndex.from_documents([],
-        #                                                      storage_context=self.storage_context)
-        #         self.index.storage_context.persist(self.persist_path)
-        #         return 'builded'
-        #     elif self.index_type == "SimpleKeywordTableIndex":
-        #         self.index = SimpleKeywordTableIndex.from_documents([],
-        #                                                      storage_context=self.storage_context)
-        #         self.index.storage_context.persist(self.persist_path)
-        #         return 'builded'
-        #     else:
-        #         raise ValueError("Reader is not set. Call build_reader first.")
-
-        """
-
         chunk_size = 10
         for i in range(len(documents)// chunk_size + 1):
             documents_chunk = documents[i*chunk_size:(i+1)*chunk_size]
@@ -127,42 +108,6 @@ class Queryer(QueryerABC):
                                     show_progress=True,
                                     )
 
-
-            # with safe_operation("Index"):
-            #     if nodes:
-            #         if self.index_type == "VectorStoreIndex":
-            #             self.index = VectorStoreIndex(
-            #                         nodes,
-            #                         storage_context = self.storage_context,
-            #                         show_progress=True,
-            #                                             )
-
-
-            #         elif self.index_type == "PropertyGraphIndex":
-            #             self.index = PropertyGraphIndex(
-            #                         nodes,
-            #                         kg_extractors = self.kg_extractors,
-            #                         storage_context = self.storage_context,
-            #                         show_progress=True,
-            #                                             )
-
-            #     else:
-            #         if self.index_type == "VectorStoreIndex":
-            #             self.index = VectorStoreIndex.from_documents(
-            #                                 documents=documents_chunk,
-            #                                 storage_context = self.storage_context,
-            #                                 show_progress=True,
-            #             )
-
-            #         elif self.index_type == "PropertyGraphIndex":
-            #             self.index = PropertyGraphIndex.from_documents(
-            #                                         documents=documents_chunk,
-            #                                         kg_extractors = self.kg_extractors,
-            #                                         storage_context = self.storage_context,
-            #                                         show_progress=True,
-            #                                         # embed_kg_nodes = False,
-            #                                         )
-
             with safe_operation("Storage"):
                 self.index.storage_context.persist(self.persist_path)
 
@@ -180,7 +125,10 @@ class Queryer(QueryerABC):
         self.retriever = None
 
     def update(self, prompt: str):
-        self.load()
+        if not os.path.exists(self.persist_path):
+            os.makedirs(self.persist_path)
+        else:
+            self.load()
         documents = [Document(text = prompt)]
         if self.ingestion_pipeline:
             nodes = self.ingestion_pipeline.run(documents=documents,show_progress = True)

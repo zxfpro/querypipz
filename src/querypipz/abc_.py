@@ -86,7 +86,7 @@ class QueryBuilder(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_reader(self):
+    def build_reader(self,file_path:str = None):
         """Build document reader"""
         raise NotImplementedError
 

@@ -43,6 +43,31 @@ from llama_index.core.query_engine.custom import CustomQueryEngine
 #             response_obj = self.response_synthesizer.synthesize(response.text, nodes)
 #             return Response(response=response.text,source_nodes=nodes) # TODO 增加metadata
 
+"""
+
+    # 具体生成器
+class QueryBuilder3(QueryBuilder):
+    '''
+
+    '''
+
+    def get_query(self):
+        # 例如：
+            # instance = AnotherClass(param1=value1, param2=value2)
+        
+        
+        retriever = index.as_retriever(similarity_top_k=similarity_top_k)
+        query_engine = PythonQueryEngine(
+                retriever=retriever,
+                response_synthesizer=get_response_synthesizer(response_mode="compact"),
+                llm=Settings.llm,
+                qa_prompt=qa_prompt,
+                stream = True,
+            )
+
+        return query_engine
+"""
+
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 

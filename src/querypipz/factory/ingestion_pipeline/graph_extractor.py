@@ -91,7 +91,12 @@ from llama_index.core.prompts.default_prompts import (
 )
 from llama_index.core.schema import TransformComponent, BaseNode, MetadataMode
 
+"""
+LLM_PATH = > 添加nodes 和 relations 到metadata
 
+text + metadata -> 制作nodes 和relations 
+完成以后将metadata 挂载到新的nodes和relations上
+"""
 class MyGraphExtractor2(SimpleLLMPathExtractor):
 
     async def _aextract(self, node: BaseNode) -> BaseNode:
