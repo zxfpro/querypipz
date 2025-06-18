@@ -34,9 +34,11 @@ class Queryer(QueryerABC):
         self.kg_extractors = None
         self.storage_context = None
         self.index_type = None
+
         self.retriever_nest = None
         self.query_nest = None
         self.query_pipeline = None
+        
         self.retriever = None
         self.index = None
 
