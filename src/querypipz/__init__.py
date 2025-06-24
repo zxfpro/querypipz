@@ -20,3 +20,7 @@ from querypipz.builder import BuilderFactory, BuilderType
 
 from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
 from llama_index.core.schema import TextNode
+
+from querypipz.log import Log
+
+Log.reset_level('debug')

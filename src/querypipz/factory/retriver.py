@@ -4,28 +4,21 @@ from typing import Any
 from typing import List
 from llama_index.core.objects import ObjectIndex
 from llama_index.core import VectorStoreIndex
-
 from llama_index.core.indices.property_graph import (
     LLMSynonymRetriever,
     VectorContextRetriever,
 )
-
-
- # import QueryBundle
 from llama_index.core import QueryBundle
-
-# import NodeWithScore
 from llama_index.core.schema import NodeWithScore
-
 from llama_index.core.retrievers import (
     BaseRetriever,
     VectorIndexRetriever,
     KeywordTableSimpleRetriever,
 )
-
 from llama_index.core import VectorStoreIndex
 from llama_index.core import Document
-
+from querypipz.log import Log
+logger = Log.logger
 
 class CustomRetriever(BaseRetriever):
     """Custom retriever that performs both semantic search and hybrid search."""
@@ -133,20 +126,18 @@ class Retriver:
         instance = None
 
         if key_name == 'ToolsRetriver':
-            # if we were using an external vector store,
-            #   we could pass the stroage context and any other kwargs
-            # storage_context=storage_context,
-            # embed_model=embed_model,
-            # ...
+            logger.info(f'running {key_name}')
             obj_index = ObjectIndex.from_objects(tools,index_cls=VectorStoreIndex)
             instance=obj_index.as_retriever(similarity_top_k=2)
 
         elif key_name == "GraphLLMSynonymRetriever":
+            logger.info(f'running {key_name}')
             instance = LLMSynonymRetriever(
                 graph_store = property_graph_store,
                 include_text=False,
             )
         elif key_name == "GraphVectorContextRetriever":
+            logger.info(f'running {key_name}')
             instance = VectorContextRetriever(
                 graph_store = property_graph_store,
                 include_text=False,
@@ -158,15 +149,16 @@ class Retriver:
             keyword_retriever = KeywordTableSimpleRetriever(index=keyword_index)
             custom_retriever = CustomRetriever(vector_retriever, keyword_retriever)
             """
+            logger.info(f'running {key_name}')
             instance = CustomRetriever(
                 **kwargs
             )
         elif key_name == "CustomRetriever2":
-
+            logger.info(f'running {key_name}')
             instance = CustomRetriever2()
 
         else:
-            raise TypeError('Unknown type')
+            raise KeyError('Unknown type')
         return instance
 
     @staticmethod

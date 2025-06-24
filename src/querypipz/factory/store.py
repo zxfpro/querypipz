@@ -12,7 +12,8 @@ from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.graph_stores.memgraph import MemgraphPropertyGraphStore
 from pinecone import Pinecone
 import faiss
-
+from querypipz.log import Log
+logger = Log.logger
 
 
 class VectorStoreType(Enum):
@@ -41,15 +42,16 @@ class VectorStore:
         instance = None
 
         if key_name == 'SimpleVectorStore':
+            logger.info(f'running {key_name}')
             instance = SimpleVectorStore()
 
         elif key_name == 'FAISS':
-            # Create a FAISS index
+            logger.info(f'running {key_name}')
             faiss_index = faiss.IndexFlatL2(1536)  # Example dimension
             instance = FaissVectorStore(faiss_index=faiss_index)
 
         elif key_name == 'PINECONE':
-            # Create a FAISS index
+            logger.info(f'running {key_name}')
             api_key = os.environ["PINECONE_API_KEY"]
             pc = Pinecone(api_key=api_key)
             pinecone_index = pc.Index("quickstart-index")
@@ -59,7 +61,7 @@ class VectorStore:
             instance = vector_store
 
         else:
-            raise TypeError('Unknown type')
+            raise KeyError('Unknown type')
 
         return instance
 
@@ -89,9 +91,10 @@ class DocStore:
         instance = None
 
         if key_name == 'SimpleDocumentStore':
+            logger.info(f'running {key_name}')
             instance = SimpleDocumentStore()
         else:
-            raise TypeError('Unknown type')
+            raise KeyError('Unknown type')
 
         return instance
 
@@ -123,8 +126,10 @@ class GraphStore:
         instance = None
 
         if key_name == 'SimpleGraphStore':
+            logger.info(f'running {key_name}')
             instance = SimpleGraphStore()
         elif key_name == 'NebulaGraphStore':
+            logger.info(f'running {key_name}')
             os.environ["NEBULA_USER"] = "root"
             os.environ["NEBULA_PASSWORD"] = "nebula"
             os.environ["NEBULA_ADDRESS"] = "127.0.0.1:9669"
@@ -136,6 +141,7 @@ class GraphStore:
             instance = graph_store
 
         elif key_name == 'Neo4jGraphStore':
+            logger.info(f'running {key_name}')
             graph_store = Neo4jPropertyGraphStore(
                 username="neo4j",
                 password="ZHF4233613",
@@ -144,6 +150,7 @@ class GraphStore:
             instance = graph_store
 
         elif key_name == 'MemgraphGraphStore':
+            logger.info(f'running {key_name}')
             graph_store = MemgraphPropertyGraphStore(
                 username="",# Enter your Memgraph username (default "")
                 password="",# Enter your Memgraph password (default "")
@@ -151,6 +158,6 @@ class GraphStore:
             )
             instance = graph_store
         else:
-            raise TypeError('Unknown type')
+            raise KeyError('Unknown type')
 
         return instance

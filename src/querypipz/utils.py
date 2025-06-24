@@ -2,6 +2,10 @@
 from llama_index.core.workflow import Context
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.tools import FunctionTool
+from llama_index.llms.openai import OpenAI
+from llama_index.core import Settings
+from llama_index.embeddings.openai import OpenAIEmbedding
+import os
 
 class VisualIndex():
     """visualization Index
@@ -88,9 +92,6 @@ def set_llama_index(api_key: str = None, api_base: str = "https://api.bianxieai.
         api_base (str): Base URL for the API endpoint.
     """
 
-    from llama_index.llms.openai import OpenAI
-    from llama_index.core import Settings
-    from llama_index.embeddings.openai import OpenAIEmbedding
 
     api_key=api_key or os.getenv('BIANXIE_API_KEY')
 
