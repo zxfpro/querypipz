@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Any
 
 from llama_index.core.query_engine.custom import CustomQueryEngine
+from llama_index.core.query_engine import RetrieverQueryEngine
 
 
 # class PythonQueryEngine(CustomQueryEngine):
@@ -67,8 +68,6 @@ class QueryBuilder3(QueryBuilder):
 
         return query_engine
 """
-
-from llama_index.core.query_engine import RetrieverQueryEngine
 
 
 

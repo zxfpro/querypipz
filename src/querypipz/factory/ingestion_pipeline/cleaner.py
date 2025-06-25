@@ -2,7 +2,7 @@
 import re
 from enum import Enum
 from typing import Any
-from promptlibz import Templates,TemplateType
+from promptlibz.core import PromptManager,PromptRepository
 from llama_index.core.schema import TransformComponent
 from llmada import BianXieAdapter
 from llama_index.core import Document
@@ -15,8 +15,12 @@ class DeDaoCleaner(TransformComponent):
         TransformComponent (_type_): _description_
     """
     def __call__(self, nodes, **kwargs):
-        prompt = Templates(TemplateType.DedaoExtract)
+        repository = PromptRepository()
+        manager = PromptManager(repository)
+        prompt = manager.get_prompt("DedaoExtract")
+
         bx = BianXieAdapter()
+        # prompt = Templates(TemplateType.DedaoExtract)
         # bx = GoogleAdapter("AIzaSyBH4ut1plgB95fEiBlBXq1S-VrdYY5xPU4")
         for node in nodes:
             result = bx.product(prompt.format(text = node.text))
