@@ -22,6 +22,9 @@ class DeDaoJYRKTextSplitter(SentenceSplitter):
 
         Has a preference for complete sentences, phrases, and minimal overlap.
         """
+        assert isinstance(text,str)
+        assert isinstance(chunk_size,int)
+
         # text : str
         if text == "":
             return [text]
@@ -34,6 +37,7 @@ class DeDaoJYRKTextSplitter(SentenceSplitter):
 
 #             event.on_end(payload={EventPayload.CHUNKS: chunks})
         chunks = text.split('\n\n')
+        assert isinstance(chunks,list)
         return chunks
 
 class HistoryMemorySplitter(SentenceSplitter):

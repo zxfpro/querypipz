@@ -7,6 +7,9 @@ from llama_index.core.schema import TransformComponent
 from llmada import BianXieAdapter
 from llama_index.core import Document
 # from llama_index.core.node_parser import SimpleNodeParser
+from querypipz.log import Log
+logger = Log.logger
+
 
 class DeDaoCleaner(TransformComponent):
     """专为得到设计的清理类
@@ -185,14 +188,22 @@ class ChatHistoryMemoryCleaner(TransformComponent):
     """
     def __call__(self, nodes, **kwargs):
         text = nodes[0].text
+        assert isinstance(text,str)
+        logger.debug(f'text: {text}')
         conversation = self._parse_conversation(text)
+        logger.debug(f'conversation: {conversation}')
         a = [f"user: {conversation_i.get('user')},\nassistant: {conversation_i.get('assistant')}" for conversation_i in conversation]
+        
         docs = []
-        docs.append(Document(text = a[0],metadata = {'docs':     a[0]+a[1]},excluded_embed_metadata_keys=['docs']))
-        docs.append(Document(text = a[len(a)-1],metadata = {'docs':a[len(a)-2]+a[len(a)-1]},excluded_embed_metadata_keys=['docs']))
-        for i in range(len(a)-2):
-            # print(i,i+1,i+2)
-            docs.append(Document(text = a[i+1],metadata = {'docs':a[i]+a[i+1] + a[i+2]},excluded_embed_metadata_keys=['docs']))
+
+        if len(a)>=2:
+            docs.append(Document(text = a[0],metadata = {'docs':     a[0]+a[1]},excluded_embed_metadata_keys=['docs']))
+            docs.append(Document(text = a[len(a)-1],metadata = {'docs':a[len(a)-2]+a[len(a)-1]},excluded_embed_metadata_keys=['docs']))
+            for i in range(len(a)-2):
+                # print(i,i+1,i+2)
+                docs.append(Document(text = a[i+1],metadata = {'docs':a[i]+a[i+1] + a[i+2]},excluded_embed_metadata_keys=['docs']))
+        else:
+            docs.append(Document(text = a[0],metadata = {'docs': a[0]},excluded_embed_metadata_keys=['docs']))
         return docs
 
     def _parse_conversation(self,text):

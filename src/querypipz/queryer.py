@@ -54,7 +54,7 @@ class Queryer(QueryerABC):
             cover (bool, optional): if you want to cover a exists knowledge base, set True. Defaults to False.
         """
 
-        assert isinstance(text,str)
+        assert isinstance(text,str | None)
         assert isinstance(cover,bool)
         nodes = None
 
