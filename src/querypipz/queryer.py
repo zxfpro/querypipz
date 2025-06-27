@@ -139,7 +139,7 @@ class Queryer(QueryerABC):
         return 'builded'
 
 
-    def update(self,text: str):
+    def update(self,text: str,metadata : dict = None):
         """update
 
         Args:
@@ -158,7 +158,11 @@ class Queryer(QueryerABC):
                 self.index = load_index_from_storage(storage_context=storage_context)
 
         with safe_operation("insert Document"):
-            documents = [Document(text = text)]
+            if metadata:
+                documents = [Document(text = text,metadata = metadata)]
+            else:
+                documents = [Document(text = text)]
+
 
             if self.ingestion_pipeline:
                 nodes = self.ingestion_pipeline.run(documents=documents,show_progress = True)
