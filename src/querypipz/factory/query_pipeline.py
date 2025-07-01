@@ -69,7 +69,38 @@ class QueryBuilder3(QueryBuilder):
         return query_engine
 """
 
+from llama_index.core.query_engine import CustomQueryEngine
+from llama_index.llms.openai import OpenAI
+from llama_index.core import PromptTemplate
 
+from toolsz.dev import AutoAPIMD
+
+class APIQueryEngine(CustomQueryEngine):
+    """RAG String Query Engine."""
+
+    # retriever: BaseRetriever
+    # response_synthesizer: BaseSynthesizer
+    llm: OpenAI
+    qa_prompt: PromptTemplate
+    input_file: str
+    def custom_query(self, query_str: str):
+        qa_prompt = PromptTemplate(
+    "API文档信息如下.\n"
+    "---------------------\n"
+    "{context_str}\n"
+    "---------------------\n"
+    "Given the context information and not prior knowledge, "
+    "answer the query.\n"
+    "Query: {query_str}\n"
+    "Answer: "
+)
+        context_str = AutoAPIMD().generate_api_docs(self.input_file, 'api_documentation_mermaidz.md')
+
+        response = self.llm.complete(
+            qa_prompt.format(context_str=context_str, query_str=query_str)
+        )
+
+        return str(response)
 
 
 class QueryType(Enum):
@@ -91,10 +122,22 @@ class QueryPipeline:
                 retriever=custom_retriever,
                 response_synthesizer=response_synthesizer,
             )
+        elif type.value == 'APIQuery':
+            instance = APIQueryEngine(
+                qa_prompt=qa_prompt,
+                llm = Settings.llm,
+                input_file = '/Users/zhaoxuefeng/GitHub/llmada/src/llmada/core.py'
+            )
 
 
         elif type.value == 'Simple2':
-
+            query_engine2 = SubQuestionQueryEngine.from_defaults(
+                query_engine_tools=query_engine_tools,
+                use_async=True,
+            )
+        
+        elif type.value == 'Simple2':
+                
             # instance = AnotherClass(param1=value1, param2=value2)
             pass
             # query_engine = RetrieverQueryEngine(

@@ -35,10 +35,16 @@ class AgentFactory:
                     verbose=True,)
 
         elif key_name == 'FunctionAgent':
+            user = "user123"
+            system_prompt = f"""You are now connected to the booking system and helping {user} with making a booking.
+            Only enter details that the user has explicitly provided.
+            Do not make up any details.
+            """
             instance = FunctionAgent(
                 tools = tools,
                 tools_retriver=tools_retriver,
                 llm=Settings.llm,
+                system_prompt=system_prompt,
                 verbose=True,)
 
         else:
