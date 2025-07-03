@@ -24,3 +24,4 @@ from llama_index.core.schema import TextNode
 from querypipz.log import Log
 
 Log.reset_level('debug')
+#  "faiss-cpu>=1.11.0",

@@ -5,13 +5,13 @@ import os
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.core.vector_stores import SimpleVectorStore
 from llama_index.core.graph_stores import SimpleGraphStore
-from llama_index.vector_stores.faiss import FaissVectorStore
+# from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.graph_stores.nebula import NebulaPropertyGraphStore
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.graph_stores.memgraph import MemgraphPropertyGraphStore
 from pinecone import Pinecone
-import faiss
+# import faiss
 from querypipz.log import Log
 logger = Log.logger
 
@@ -45,10 +45,10 @@ class VectorStore:
             logger.info(f'running {key_name}')
             instance = SimpleVectorStore()
 
-        elif key_name == 'FAISS':
-            logger.info(f'running {key_name}')
-            faiss_index = faiss.IndexFlatL2(1536)  # Example dimension
-            instance = FaissVectorStore(faiss_index=faiss_index)
+        # elif key_name == 'FAISS':
+        #     logger.info(f'running {key_name}')
+        #     faiss_index = faiss.IndexFlatL2(1536)  # Example dimension
+        #     instance = FaissVectorStore(faiss_index=faiss_index)
 
         elif key_name == 'PINECONE':
             logger.info(f'running {key_name}')
