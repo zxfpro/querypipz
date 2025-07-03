@@ -2,7 +2,7 @@
 import re
 from enum import Enum
 from typing import List, Dict, Any, Sequence
-from llmada import BianXieAdapter
+from llmada.core import BianXieAdapter
 from llama_index.core.extractors import (
     TitleExtractor,
     QuestionsAnsweredExtractor,
