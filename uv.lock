@@ -2393,7 +2393,7 @@ wheels = [
 
 [[package]]
 name = "querypipz"
-version = "0.1.20"
+version = "0.1.21"
 source = { virtual = "." }
 dependencies = [
     { name = "llama-index" },
