@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Any
 from promptlibz.core import PromptManager,PromptRepository
 from llama_index.core.schema import TransformComponent
-from llmada import BianXieAdapter
+from llmada.core import BianXieAdapter
 from llama_index.core import Document
 # from llama_index.core.node_parser import SimpleNodeParser
 from querypipz.log import Log
