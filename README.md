@@ -10,7 +10,7 @@
 
 3 注册到director 中的 buildtype中
 
-4 使用jupyter notebook 进行测试
+
 
 ###
 

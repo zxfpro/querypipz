@@ -36,7 +36,8 @@ class Package():
     def package_tool(func):
         """ 包装工具 """
         return FunctionTool.from_defaults(func,name=func.__name__,
-                                          return_direct=False, #直接返回 具体定义在Tool_Metadata中)
+                                          return_direct=False, #直接返回 具体定义在Tool_Metadata中
+                                          )
 
     @staticmethod
     def package_querypip2tool(query_engine,name,description):
