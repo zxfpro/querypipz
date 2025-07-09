@@ -9,6 +9,7 @@ from llama_index.core import StorageContext,SimpleDirectoryReader
 
 from querypipz.abc_ import QueryBuilder
 from querypipz.queryer import Queryer
+
 from querypipz.factory import (
     GraphExtractor,
     GraphExtractorType,
@@ -28,6 +29,8 @@ from querypipz.factory import (
     GraphStoreType,
     Retriver,
     RetriverType,
+    LLMFactory,
+    LLMType,
     )
 
 
@@ -174,6 +177,26 @@ class SZRSGraphMemoryBuilder(BaseGraphQueryBuilder):
 
 
 class ChatHistoryMemoryBuilder(BaseQueryBuilder):
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/HistoryMemory_2'):
+        super().__init__(persist_path = persist_path)
+
+    def set_llm(self):
+        Settings.llm = LLMFactory(LLMType.BIANXIELLM,model_name="gemini-2.5-flash-preview-05-20-nothinking")
+        # Settings.llm = OpenAI(model="gpt-4.1-mini-2025-04-14",api_base=api_base,api_key=api_key)
+
+    def build_reader(self,file_path:str = None):
+        self.query.reader = None
+
+    def build_ingestion_pipeline(self):
+        self.query.ingestion_pipeline = IngestionPipeline(
+            transformations=[
+                Cleaner(CleanerType.ChatHistoryMemoryCleaner),
+                # Extractor(ExtractorType.HISTORY_MEMORY_KEYWORD_EXTRACTOR),
+                # Embedding(EmbeddingType.SIMILARITY_TEXT_3L_EMBEDDING),
+                ]
+            )
+
+class ChatHistoryMemoryBuilder_old(BaseQueryBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/HistoryMemory'):
         super().__init__(persist_path = persist_path)
 
@@ -191,7 +214,6 @@ class ChatHistoryMemoryBuilder(BaseQueryBuilder):
                 # Embedding(EmbeddingType.SIMILARITY_TEXT_3L_EMBEDDING),
                 ]
             )
-
 
 
 class JYRKArticleBuilder(BaseQueryBuilder):

@@ -15,7 +15,9 @@ from .ingestion_pipeline import (
     Extractor,
     ExtractorType,
     GraphExtractor,
-    GraphExtractorType
+    GraphExtractorType,
+    LLMFactory,
+    LLMType,
 )
 
 # from .store_utils import TODO
