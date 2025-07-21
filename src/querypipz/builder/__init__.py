@@ -4,6 +4,7 @@ from typing import Any
 from .builderlib import (
     SZRSGraphMemoryBuilder,
     ChatHistoryMemoryBuilder,
+    ChatHistoryMemoryBuilder_V3,
     JYRKArticleBuilder,
     ObsidianBuilder
 )
@@ -17,6 +18,7 @@ class BuilderType(Enum):
     """
     SZRS_GRAPH_MEMORY_BUILDER = 'SZRSGraphMemoryBuilder'
     CHAT_HISTORY_MEMORY_BUILDER = "ChatHistoryMemoryBuilder"
+    CHAT_HISTORY_MEMORY_BUILDER_V3 = "ChatHistoryMemoryBuilder_V3"
     JYRK_ARTICLE_BUILDER = "JYRKArticleBuilder"
     OBSIDIAN_BUILDER = "ObsidianBuilder"
     # 添加更多选项
@@ -33,6 +35,7 @@ class BuilderFactory:
     _builders = {
         BuilderType.SZRS_GRAPH_MEMORY_BUILDER: SZRSGraphMemoryBuilder,
         BuilderType.CHAT_HISTORY_MEMORY_BUILDER: ChatHistoryMemoryBuilder,
+        BuilderType.CHAT_HISTORY_MEMORY_BUILDER_V3: ChatHistoryMemoryBuilder_V3,
         BuilderType.JYRK_ARTICLE_BUILDER: JYRKArticleBuilder,
         BuilderType.OBSIDIAN_BUILDER: ObsidianBuilder,
     }

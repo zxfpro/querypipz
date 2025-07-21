@@ -176,6 +176,26 @@ class SZRSGraphMemoryBuilder(BaseGraphQueryBuilder):
         self.query.kg_extractors = [GraphExtractor(GraphExtractorType.SCHEMA_LLM_PATH_EXTRACTOR3)]
 
 
+class ChatHistoryMemoryBuilder_V3(BaseQueryBuilder):
+    def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/HistoryMemory_3'):
+        super().__init__(persist_path = persist_path)
+
+    def set_llm(self):
+        Settings.llm = LLMFactory(LLMType.BIANXIELLM,model_name="gemini-2.5-flash-preview-05-20-nothinking")
+
+    def build_reader(self,file_path:str = None):
+        self.query.reader = None
+
+    def build_ingestion_pipeline(self):
+        self.query.ingestion_pipeline = IngestionPipeline(
+            transformations=[
+                Cleaner(CleanerType.ChatHistoryMemoryCleaner),
+                # Extractor(ExtractorType.HISTORY_MEMORY_KEYWORD_EXTRACTOR),
+                # Embedding(EmbeddingType.SIMILARITY_TEXT_3L_EMBEDDING),
+                ]
+            )
+
+
 class ChatHistoryMemoryBuilder(BaseQueryBuilder):
     def __init__(self,persist_path='/Users/zhaoxuefeng/GitHub/obsidian/知识库/HistoryMemory_2'):
         super().__init__(persist_path = persist_path)

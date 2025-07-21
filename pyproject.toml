@@ -1,6 +1,6 @@
 [project]
 name = "querypipz"
-version = "0.1.22"
+version = "0.1.23"
 description = "提供使用llama-index的适配器接口"
 readme = "README.md"
 requires-python = ">=3.10"
