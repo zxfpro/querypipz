@@ -10,7 +10,11 @@
 
 3 注册到director 中的 buildtype中
 
-
+"""
+    VectorStore        from document      from vectorstore
+    内有数据             √(创建时会存储)              √(及时存储)
+    内无数据                  √                     √(需要以创建)
+"""
 
 ###
 
